@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialKeyguardLayout="@layout/music_player_widget"
+    android:initialLayout="@layout/music_player_widget"
+    android:description="@string/musicPlayerWidgetDescription"
+    android:targetCellHeight="2"
+    android:targetCellWidth="2"
+    android:minWidth="160dp"
+    android:minHeight="160dp"
+    android:minResizeWidth="@dimen/musicPlayerWidgetButtonSize"
+    android:minResizeHeight="@dimen/musicPlayerWidgetButtonSize"
+    android:previewImage="@drawable/music_player_widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen|keyguard" />

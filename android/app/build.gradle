@@ -69,6 +69,9 @@ android {
             signingConfig = signingConfigs.release
         }
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 flutter {

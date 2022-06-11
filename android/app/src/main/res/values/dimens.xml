@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="musicPlayerWidgetButtonSize">48dp</dimen>
+    <dimen name="appWidgetRadius">16dp</dimen>
+    <dimen name="appWidgetInnerRadius">8dp</dimen>
+</resources>

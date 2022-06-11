@@ -1,0 +1,70 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Android.AppWidget.Container"
+    android:theme="@style/Theme.Android.AppWidgetContainer"
+    android:id="@android:id/background"
+    android:background="@drawable/music_player_widget_background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/music_player_widget_no_song_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/launch_foreground" />
+
+    <ImageView
+        android:id="@+id/music_player_widget_song_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/musicPlayerWidgetButtonSize"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="0dp"
+        android:background="@drawable/music_player_widget_button_bar_background"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/music_player_widget_previous_button"
+            android:layout_width="@dimen/musicPlayerWidgetButtonSize"
+            android:layout_height="@dimen/musicPlayerWidgetButtonSize"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Previous track"
+            android:src="@drawable/round_skip_previous"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/music_player_widget_play_pause_button"
+            style="@android:style/Widget.DeviceDefault.ImageButton"
+            android:layout_width="@dimen/musicPlayerWidgetButtonSize"
+            android:layout_height="@dimen/musicPlayerWidgetButtonSize"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Play"
+            android:src="@drawable/round_play_arrow" />
+
+        <ImageButton
+            android:id="@+id/music_player_widget_skip_next_button"
+            android:layout_width="@dimen/musicPlayerWidgetButtonSize"
+            android:layout_height="@dimen/musicPlayerWidgetButtonSize"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Next track"
+            android:src="@drawable/round_skip_next"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</RelativeLayout>
