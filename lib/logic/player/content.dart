@@ -282,6 +282,7 @@ class ContentControl extends Control {
       MusicPlayer.instance.dispose();
       FavoritesControl.instance.dispose();
       PlayerInterfaceColorStyleControl.instance.dispose();
+      AppWidgetControl.instance.dispose();
     }
     super.dispose();
   }

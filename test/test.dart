@@ -21,6 +21,7 @@ import 'package:sweyer_plugin/sweyer_plugin_platform_interface.dart';
 
 export 'fakes/fakes.dart';
 
+import 'observer/app_widget.dart';
 import 'observer/observer.dart';
 import 'test.dart';
 import 'test_description.dart';
@@ -116,6 +117,7 @@ Future<void> setUpAppTest([VoidCallback? configureFakes]) async {
   DeviceInfoControl.instance = FakeDeviceInfoControl();
   FavoritesControl.instance = FakeFavoritesControl();
   PermissionsChannelObserver(binding); // Grant all permissions by default.
+  AppWidgetChannelObserver(binding); // Ignore app widget updates by default.
   SweyerPluginPlatform.instance = FakeSweyerPluginPlatform(binding);
   QueueControl.instance = FakeQueueControl();
   ThemeControl.instance = FakeThemeControl();
