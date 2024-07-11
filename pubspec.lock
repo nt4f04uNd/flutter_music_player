@@ -588,10 +588,10 @@ packages:
     dependency: "direct main"
     description:
       name: home_widget
-      sha256: c7a57566606ce702454f074a0b933ee156f05ea6ef1f79f4cb680a171afe59dd
+      sha256: "2a0fdd6267ff975bd07bedf74686bd5577200f504f5de36527ac1b56bdbe68e3"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0+1"
+    version: "0.6.0"
   hooks_riverpod:
     dependency: "direct main"
     description:
