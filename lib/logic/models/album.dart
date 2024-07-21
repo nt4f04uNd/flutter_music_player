@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:sweyer/sweyer.dart';
 import 'package:sweyer_plugin/sweyer_plugin.dart';
 
@@ -87,17 +88,27 @@ class Album extends PersistentQueue implements PlatformAlbum {
     );
   }
 
-  factory Album.fromMap(Map<String, dynamic> map) {
-    return Album(
-      id: map['id'] as int,
-      album: map['album'] as String,
-      albumArt: map['albumArt'] as String?,
-      artist: map['artist'] as String,
-      artistId: map['artistId'] as int?,
-      firstYear: map['firstYear'] as int?,
-      lastYear: map['lastYear'] as int?,
-      numberOfSongs: map['numberOfSongs'] as int? ?? 0,
-    );
+  static Album? fromMap(Map<String, dynamic> map) {
+    try {
+      return Album(
+        id: map['id'] as int,
+        album: map['album'] as String,
+        albumArt: map['albumArt'] as String?,
+        artist: map['artist'] as String,
+        artistId: map['artistId'] as int?,
+        firstYear: map['firstYear'] as int?,
+        lastYear: map['lastYear'] as int?,
+        numberOfSongs: map['numberOfSongs'] as int? ?? 0,
+      );
+    } on TypeError catch (error, stack) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stack,
+        reason: 'trying to parse an album',
+        fatal: false,
+      );
+      return null;
+    }
   }
 
   @override
@@ -125,7 +136,7 @@ abstract class AlbumCopyWith {
   Album call({
     int id,
     String album,
-    String albumArt,
+    String? albumArt,
     String artist,
     int? artistId,
     int? firstYear,
@@ -148,7 +159,7 @@ class _AlbumCopyWith extends AlbumCopyWith {
   Album call({
     Object id = _undefined,
     Object album = _undefined,
-    Object albumArt = _undefined,
+    Object? albumArt = _undefined,
     Object artist = _undefined,
     Object? artistId = _undefined,
     Object? firstYear = _undefined,
@@ -158,7 +169,7 @@ class _AlbumCopyWith extends AlbumCopyWith {
     return Album(
       id: id == _undefined ? value.id : id as int,
       album: album == _undefined ? value.album : album as String,
-      albumArt: albumArt == _undefined ? value.albumArt : albumArt as String,
+      albumArt: albumArt == _undefined ? value.albumArt : albumArt as String?,
       artist: artist == _undefined ? value.artist : artist as String,
       artistId: artistId == _undefined ? value.artistId : artistId as int?,
       firstYear: firstYear == _undefined ? value.firstYear : firstYear as int?,
