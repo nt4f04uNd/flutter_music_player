@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:sweyer/sweyer.dart';
 import 'package:sweyer_plugin/sweyer_plugin.dart';
 
@@ -23,6 +24,7 @@ class Song extends Content implements PlatformSong {
   final int? albumId;
   final String artist;
   final int artistId;
+
   // TODO: Voodoo shenanigans on android versions with this (and other places where i can)
   final String? genre;
   final int? genreId;
@@ -149,26 +151,36 @@ class Song extends Content implements PlatformSong {
     );
   }
 
-  factory Song.fromMap(Map<String, dynamic> map) {
-    return Song(
-      id: map['id'] as int,
-      album: map['album'] as String?,
-      albumId: map['albumId'] as int?,
-      artist: map['artist'] as String,
-      artistId: map['artistId'] as int,
-      genre: map['genre'] as String?,
-      genreId: map['genreId'] as int?,
-      title: map['title'] as String,
-      track: map['track'] as String?,
-      dateAdded: map['dateAdded'] as int,
-      dateModified: map['dateModified'] as int,
-      duration: map['duration'] as int,
-      size: map['size'] as int,
-      filesystemPath: map['filesystemPath'] as String?,
-      isFavoriteInMediaStore: map['isFavoriteInMediaStore'] as bool?,
-      generationAdded: map['generationAdded'] as int?,
-      generationModified: map['generationModified'] as int?,
-    );
+  static Song? fromMap(Map<String, dynamic> map) {
+    try {
+      return Song(
+        id: map['id'] as int,
+        album: map['album'] as String?,
+        albumId: map['albumId'] as int?,
+        artist: map['artist'] as String,
+        artistId: map['artistId'] as int,
+        genre: map['genre'] as String?,
+        genreId: map['genreId'] as int?,
+        title: map['title'] as String,
+        track: map['track'] as String?,
+        dateAdded: map['dateAdded'] as int,
+        dateModified: map['dateModified'] as int,
+        duration: map['duration'] as int,
+        size: map['size'] as int,
+        filesystemPath: map['filesystemPath'] as String?,
+        isFavoriteInMediaStore: map['isFavoriteInMediaStore'] as bool?,
+        generationAdded: map['generationAdded'] as int?,
+        generationModified: map['generationModified'] as int?,
+      );
+    } on TypeError catch (error, stack) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stack,
+        reason: 'trying to parse a song',
+        fatal: false,
+      );
+      return null;
+    }
   }
 
   @override
