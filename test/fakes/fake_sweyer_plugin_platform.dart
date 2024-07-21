@@ -1,5 +1,4 @@
-import 'dart:collection';
-
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:sweyer_plugin/sweyer_plugin.dart';
 import '../test.dart';
@@ -42,6 +41,11 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
   List<Album>? albums;
   List<Playlist>? playlists;
   List<Artist>? artists;
+
+  List<Map<String, dynamic>>? rawSongs;
+  List<Map<String, dynamic>>? rawAlbums;
+  List<Map<String, dynamic>>? rawPlaylists;
+  List<Map<String, dynamic>>? rawArtists;
 
   @override
   Future<void> createPlaylist(String name) async {}
@@ -97,13 +101,20 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrieveAlbums() async {
-    final albumsList = albums ?? [albumWith()];
-    return albumsList.map((album) => album.toMap());
+    return CombinedIterableView([
+      rawAlbums,
+      albums?.map((album) => album.toMap()),
+      if (rawAlbums == null && albums == null) [albumWith().toMap()]
+    ].whereNotNull());
   }
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrieveArtists() async {
-    return (artists ?? [artistWith()]).map((artist) => artist.toMap());
+    return CombinedIterableView([
+      rawArtists,
+      artists?.map((artist) => artist.toMap()),
+      if (rawArtists == null && artists == null) [artistWith().toMap()]
+    ].whereNotNull());
   }
 
   @override
@@ -113,12 +124,20 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrievePlaylists() async {
-    return (playlists ?? [playlistWith()]).map((playlist) => playlist.toMap());
+    return CombinedIterableView([
+      rawPlaylists,
+      playlists?.map((playlist) => playlist.toMap()),
+      if (rawPlaylists == null && playlists == null) [playlistWith().toMap()]
+    ].whereNotNull());
   }
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrieveSongs() async {
-    return (songs ?? [songWith()]).map((song) => song.toMap());
+    return CombinedIterableView([
+      rawSongs,
+      songs?.map((song) => song.toMap()),
+      if (rawSongs == null && songs == null) [songWith().toMap()]
+    ].whereNotNull());
   }
 
   /// The log of all recorded [setSongsFavorite] calls.
