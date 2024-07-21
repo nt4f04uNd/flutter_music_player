@@ -54,7 +54,7 @@ class FavoritesControl with Control {
     final Set<int> favoriteSet = {};
     if (_useMediaStoreFavorites(contentType)) {
       for (final song in ContentControl.instance.state.allSongs.songs) {
-        if (song.isFavoriteInMediaStore!) {
+        if (song.isFavoriteInMediaStore ?? false) {
           favoriteSet.add(song.sourceId);
         }
       }
@@ -209,9 +209,9 @@ class FavoritesControl with Control {
         await ContentControl.instance.refetch(ContentType.song);
         final favoriteSet = _favoriteSetsMap.get(ContentType.song);
         for (final song in ContentControl.instance.state.allSongs.songs) {
-          if (song.isFavoriteInMediaStore! && !favoriteSet.contains(song.id)) {
+          if ((song.isFavoriteInMediaStore ?? false) && !favoriteSet.contains(song.id)) {
             favoriteSet.add(song.id);
-          } else if (!song.isFavoriteInMediaStore! && favoriteSet.contains(song.id)) {
+          } else if (!(song.isFavoriteInMediaStore ?? false) && favoriteSet.contains(song.id)) {
             favoriteSet.remove(song.id);
           }
         }
