@@ -10,6 +10,7 @@ export 'fake_just_audio.dart';
 export 'fake_queue.dart';
 export 'fake_theme.dart';
 export 'fake_serializer.dart';
+export 'fake_firebase.dart';
 
 /// A 50x50 blue square png.
 const List<int> kBlueSquarePng = <int>[
