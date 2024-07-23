@@ -1,4 +1,5 @@
-import 'package:collection/collection.dart';
+import 'dart:collection';
+
 import 'package:flutter/services.dart';
 import 'package:sweyer_plugin/sweyer_plugin.dart';
 import '../test.dart';
@@ -37,15 +38,14 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
   }
   static late FakeSweyerPluginPlatform instance;
 
-  List<Song>? songs;
-  List<Album>? albums;
-  List<Playlist>? playlists;
-  List<Artist>? artists;
-
-  List<Map<String, dynamic>>? rawSongs;
-  List<Map<String, dynamic>>? rawAlbums;
-  List<Map<String, dynamic>>? rawPlaylists;
-  List<Map<String, dynamic>>? rawArtists;
+  set songs(List<Song> value) => songsFactory = () => value.map((song) => song.toMap());
+  Iterable<Map<String, dynamic>> Function() songsFactory = () => [songWith().toMap()];
+  set albums(List<Album> value) => albumsFactory = () => value.map((album) => album.toMap());
+  Iterable<Map<String, dynamic>> Function() albumsFactory = () => [albumWith().toMap()];
+  set playlists(List<Playlist> value) => playlistsFactory = () => value.map((playlist) => playlist.toMap());
+  Iterable<Map<String, dynamic>> Function() playlistsFactory = () => [playlistWith().toMap()];
+  set artists(List<Artist> value) => artistsFactory = () => value.map((artist) => artist.toMap());
+  Iterable<Map<String, dynamic>> Function() artistsFactory = () => [artistWith().toMap()];
 
   @override
   Future<void> createPlaylist(String name) async {}
@@ -64,8 +64,10 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
     required List<int> songIds,
     required int playlistId,
   }) async {
-    final playlist = playlists!.firstWhere((playlist) => playlist.id == playlistId);
-    playlist.songIds.insertAll(index, songIds);
+    final playlists = playlistsFactory().toList();
+    final playlist = playlists.firstWhere((playlist) => playlist['id'] == playlistId);
+    (playlist.putIfAbsent('songIds', () => []) as List).insertAll(index, songIds);
+    playlistsFactory = () => playlists;
   }
 
   @override
@@ -101,20 +103,12 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrieveAlbums() async {
-    return CombinedIterableView([
-      rawAlbums,
-      albums?.map((album) => album.toMap()),
-      if (rawAlbums == null && albums == null) [albumWith().toMap()]
-    ].whereNotNull());
+    return albumsFactory();
   }
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrieveArtists() async {
-    return CombinedIterableView([
-      rawArtists,
-      artists?.map((artist) => artist.toMap()),
-      if (rawArtists == null && artists == null) [artistWith().toMap()]
-    ].whereNotNull());
+    return artistsFactory();
   }
 
   @override
@@ -124,20 +118,12 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrievePlaylists() async {
-    return CombinedIterableView([
-      rawPlaylists,
-      playlists?.map((playlist) => playlist.toMap()),
-      if (rawPlaylists == null && playlists == null) [playlistWith().toMap()]
-    ].whereNotNull());
+    return playlistsFactory();
   }
 
   @override
   Future<Iterable<Map<String, dynamic>>> retrieveSongs() async {
-    return CombinedIterableView([
-      rawSongs,
-      songs?.map((song) => song.toMap()),
-      if (rawSongs == null && songs == null) [songWith().toMap()]
-    ].whereNotNull());
+    return songsFactory();
   }
 
   /// The log of all recorded [setSongsFavorite] calls.
@@ -151,5 +137,5 @@ class FakeSweyerPluginPlatform extends SweyerPluginPlatform {
   }
 
   /// Get a song by its [id].
-  Song? _songById(int id) => songs?.firstWhere((song) => song.id == id);
+  Song? _songById(int id) => ContentControl.instance.state.allSongs.songs.firstWhere((song) => song.id == id);
 }

@@ -51,6 +51,16 @@ void main() {
         await tester.pumpAndSettle();
       }, goldenCaptureCallback: () => tester.screenMatchesGolden('home_route.no_songs_screen'));
     });
+
+    testAppGoldens('init_error_screen', (WidgetTester tester) async {
+      await setUpAppTest(() {
+        CrashlyticsObserver(tester.binding, throwFatalErrors: false);
+        FakeSweyerPluginPlatform.instance.songsFactory = () => throw TypeError();
+      });
+      await tester.runAppTest(() async {
+        await tester.pumpAndSettle();
+      }, goldenCaptureCallback: () => tester.screenMatchesGolden('home_route.init_error_screen'));
+    });
   });
 
   group('tabs_route', () {

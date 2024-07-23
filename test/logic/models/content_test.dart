@@ -118,8 +118,8 @@ void main() {
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
-        FakeSweyerPluginPlatform.instance.rawAlbums = validAlbums.map((element) => element.item1).toList()
-          ..addAll(invalidAlbums);
+        FakeSweyerPluginPlatform.instance.albumsFactory =
+            () => validAlbums.map((element) => element.item1).toList()..addAll(invalidAlbums);
       });
       expect(
         ContentControl.instance.state.albums.values.sorted((item1, item2) => item1.id.compareTo(item2.id)),
@@ -147,8 +147,8 @@ void main() {
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
-        FakeSweyerPluginPlatform.instance.rawArtists = validArtists.map((element) => element.item1).toList()
-          ..addAll(invalidArtists);
+        FakeSweyerPluginPlatform.instance.artistsFactory =
+            () => validArtists.map((element) => element.item1).toList()..addAll(invalidArtists);
       });
       expect(
         ContentControl.instance.state.artists.sorted((item1, item2) => item1.id.compareTo(item2.id)),
@@ -192,8 +192,8 @@ void main() {
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
-        FakeSweyerPluginPlatform.instance.rawPlaylists = validPlaylists.map((element) => element.item1).toList()
-          ..addAll(invalidPlaylists);
+        FakeSweyerPluginPlatform.instance.playlistsFactory =
+            () => validPlaylists.map((element) => element.item1).toList()..addAll(invalidPlaylists);
       });
       expect(
         ContentControl.instance.state.playlists.sorted((item1, item2) => item1.id.compareTo(item2.id)),
@@ -278,8 +278,8 @@ void main() {
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
-        FakeSweyerPluginPlatform.instance.rawSongs = validSongs.map((element) => element.item1).toList()
-          ..addAll(invalidSongs);
+        FakeSweyerPluginPlatform.instance.songsFactory =
+            () => validSongs.map((element) => element.item1).toList()..addAll(invalidSongs);
       });
       expect(
         ContentControl.instance.state.allSongs.songs.sorted((item1, item2) => item1.id.compareTo(item2.id)),
