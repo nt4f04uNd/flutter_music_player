@@ -317,9 +317,11 @@
   "playerInterfaceColorStyleThemeBackgroundColor": "Hintergrundfarbe des Farbthemas",
   "resolveConflict": "Konflikt auflößen",
   "conflictExplanation": "Das System hat andere Lieblingstitel als Sweyer, bitte wähle welche als Favorit markiert bleiben sollen. Es werden nur die Lieder angezeigt, die im Konflikt stehen.",
-  "debugTextScaleFactor": "Text scale factor",
-  "debugShowDebugOverlay": "Show debug overlay",
-  "debugShowPerformanceOverlay": "Show performance overlay",
-  "debugShowCheckerboardRasterCacheImages": "Show checkerboard raster cache images",
-  "debugShowSemanticsDebugger": "Show semantics debugger"
+  "debugTextScaleFactor": "Textskalierungsfaktor",
+  "debugShowDebugOverlay": "Debug-Einblendung anzeigen",
+  "debugShowPerformanceOverlay": "Leistungs-Einblendung anzeigen",
+  "debugShowCheckerboardRasterCacheImages": "Schachbrett-Raster-Cache-Bilder anzeigen",
+  "debugShowSemanticsDebugger": "Semantik-Debugger anzeigen",
+  "failedToInitialize": "Die Musiksuche ist fehlgeschlagen",
+  "retry": "Nochmal versuchen"
 }
