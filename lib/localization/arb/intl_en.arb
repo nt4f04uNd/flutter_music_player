@@ -321,5 +321,7 @@
   "debugShowDebugOverlay": "Show debug overlay",
   "debugShowPerformanceOverlay": "Show performance overlay",
   "debugShowCheckerboardRasterCacheImages": "Show checkerboard raster cache images",
-  "debugShowSemanticsDebugger": "Show semantics debugger"
+  "debugShowSemanticsDebugger": "Show semantics debugger",
+  "failedToInitialize": "Failed to search for music",
+  "retry": "Retry"
 }

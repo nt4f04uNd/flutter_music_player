@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:sweyer/sweyer.dart';
 import 'package:sweyer_plugin/sweyer_plugin.dart';
 
@@ -26,12 +27,22 @@ class Genre extends Content implements PlatformGenre {
   @override
   GenreCopyWith get copyWith => _GenreCopyWith(this);
 
-  factory Genre.fromMap(Map<String, dynamic> map) {
-    return Genre(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      songIds: map['songIds'].cast<int>(),
-    );
+  static Genre? fromMap(Map<String, dynamic> map) {
+    try {
+      return Genre(
+        id: map['id'] as int,
+        name: map['name'] as String,
+        songIds: map['songIds'].cast<int>(),
+      );
+    } on TypeError catch (error, stack) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stack,
+        reason: 'trying to parse a genre',
+        fatal: false,
+      );
+      return null;
+    }
   }
 
   @override

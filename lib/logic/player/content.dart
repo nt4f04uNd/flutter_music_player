@@ -226,6 +226,10 @@ class ContentControl extends Control {
   bool get initializing => _initializeCompleter != null;
   Completer<void>? _initializeCompleter;
 
+  /// Whether there was an error during initialization.
+  bool get failedToInitialize => _failedToInitialize;
+  bool _failedToInitialize = false;
+
   /// The main data app initialization function, initializes all queues.
   /// Also handles no-permissions situations.
   @override
@@ -239,22 +243,28 @@ class ContentControl extends Control {
     if (Permissions.instance.granted) {
       // TODO: prevent initializing if already initialized
       _initializeCompleter = Completer();
-      emitContentChange(); // update UI to show "Searching songs" screen
-      _restoreSorts();
-      await Future.any([
-        _initializeCompleter!.future,
-        Future.wait([
-          for (final contentType in ContentType.values)
-            refetch(contentType, updateQueues: false, emitChangeEvent: false),
-        ]),
-      ]);
-      if (!_empty && _initializeCompleter != null && !_initializeCompleter!.isCompleted) {
-        // _initQuickActions();
-        await QueueControl.instance.init();
-        PlaybackControl.instance.init();
-        await MusicPlayer.instance.init();
-        await FavoritesControl.instance.init();
-        PlayerInterfaceColorStyleControl.instance.init();
+      _failedToInitialize = false;
+      try {
+        emitContentChange(); // update UI to show "Searching songs" screen
+        _restoreSorts();
+        await Future.any([
+          _initializeCompleter!.future,
+          Future.wait([
+            for (final contentType in ContentType.values)
+              refetch(contentType, updateQueues: false, emitChangeEvent: false),
+          ]),
+        ]);
+        if (!_empty && _initializeCompleter != null && !_initializeCompleter!.isCompleted) {
+          // _initQuickActions();
+          await QueueControl.instance.init();
+          PlaybackControl.instance.init();
+          await MusicPlayer.instance.init();
+          await FavoritesControl.instance.init();
+          PlayerInterfaceColorStyleControl.instance.init();
+        }
+      } catch (error, stack) {
+        _failedToInitialize = true;
+        FirebaseCrashlytics.instance.recordError(error, stack, reason: 'initializing ContentControl', fatal: true);
       }
       _initializeCompleter = null;
     }

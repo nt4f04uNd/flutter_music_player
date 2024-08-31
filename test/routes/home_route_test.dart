@@ -15,7 +15,7 @@ void main() {
 
   group('permissions screen', () {
     testWidgets('shows if no permissions were granted and pressing the button requests permissions',
-            (WidgetTester tester) async {
+        (WidgetTester tester) async {
       late PermissionsChannelObserver permissionsObserver;
       await setUpAppTest(() {
         permissionsObserver = PermissionsChannelObserver(tester.binding);
@@ -127,6 +127,20 @@ void main() {
       // Expect appropriate ui
       expect(find.text(l10n.searchingForTracks), findsOneWidget);
       expect(find.byType(Spinner), findsOneWidget);
+    });
+  });
+
+  testWidgets('error screen - shows when searching for tracks fails', (WidgetTester tester) async {
+    late CrashlyticsObserver crashlyticsObserver;
+    await setUpAppTest(() {
+      crashlyticsObserver = CrashlyticsObserver(tester.binding, throwFatalErrors: false);
+      FakeSweyerPluginPlatform.instance.songsFactory = () => throw TypeError();
+    });
+    await tester.runAppTest(() async {
+      // Expect appropriate ui
+      expect(find.text(l10n.failedToInitialize), findsOneWidget);
+      expect(find.ancestor(of: find.text(l10n.retry), matching: find.byType(AppButton)), findsOneWidget);
+      expect(crashlyticsObserver.fatalErrorCount, 1);
     });
   });
 

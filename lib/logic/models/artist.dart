@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:sweyer/sweyer.dart';
 import 'package:sweyer_plugin/sweyer_plugin.dart';
 
@@ -76,13 +77,23 @@ class Artist extends SongOrigin implements PlatformArtist {
     );
   }
 
-  factory Artist.fromMap(Map<String, dynamic> map) {
-    return Artist(
-      id: map['id'] as int,
-      artist: map['artist'] as String,
-      numberOfAlbums: map['numberOfAlbums'] as int,
-      numberOfTracks: map['numberOfTracks'] as int,
-    );
+  static Artist? fromMap(Map<String, dynamic> map) {
+    try {
+      return Artist(
+        id: map['id'] as int,
+        artist: map['artist'] as String,
+        numberOfAlbums: map['numberOfAlbums'] as int,
+        numberOfTracks: map['numberOfTracks'] as int,
+      );
+    } on TypeError catch (error, stack) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stack,
+        reason: 'trying to parse an artist',
+        fatal: false,
+      );
+      return null;
+    }
   }
 
   @override

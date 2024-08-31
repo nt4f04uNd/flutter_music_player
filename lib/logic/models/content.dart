@@ -50,7 +50,7 @@ abstract class Content with EquatableMixin {
   /// An icon for this content type.
   IconData get icon => type.icon;
 
-  /// Whether the content was marked as favorite by user.
+  /// Whether the content was marked as favorite by the user.
   bool get isFavorite => FavoritesControl.instance.isFavorite(this);
 }
 

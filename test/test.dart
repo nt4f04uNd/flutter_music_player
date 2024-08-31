@@ -120,6 +120,7 @@ Future<void> setUpAppTest([VoidCallback? configureFakes]) async {
   JustAudioPlatform.instance = MockJustAudio(binding);
   PackageInfoPlatform.instance = MethodChannelPackageInfo();
   PlayerInterfaceColorStyleControl.instance = PlayerInterfaceColorStyleControl();
+  await FakeFirebaseApp.install(binding);
   binding.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('dev.fluttercommunity.plus/package_info'),
       (MethodCall methodCall) async {
     return {
