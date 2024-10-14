@@ -1,7 +1,6 @@
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:sweyer/logic/app_widget.dart';
-import 'package:tuple/tuple.dart';
 
 import '../observer/app_widget.dart';
 import '../test.dart';
@@ -149,18 +148,13 @@ void main() {
 
       await tester.runAsync(() => tester.tap(find.byIcon(Icons.skip_previous_rounded)));
       expect(PlaybackControl.instance.currentSong, songs.first);
-      expect(appWidgetChannelObserver.saveWidgetDataLog,
-          [Tuple2("song", songs.first.contentUri), const Tuple2("playing", false)]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog, [("song", songs.first.contentUri), ("playing", false)]);
       expect(appWidgetChannelObserver.updateWidgetRequests, [AppWidgetControl.appWidgetName]);
 
       await tester.runAsync(() => tester.tap(find.byIcon(Icons.skip_previous_rounded)));
       expect(PlaybackControl.instance.currentSong, songs.last);
-      expect(appWidgetChannelObserver.saveWidgetDataLog, [
-        Tuple2("song", songs.first.contentUri),
-        const Tuple2("playing", false),
-        Tuple2("song", songs.last.contentUri),
-        const Tuple2("playing", false)
-      ]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog,
+          [("song", songs.first.contentUri), ("playing", false), ("song", songs.last.contentUri), ("playing", false)]);
       expect(appWidgetChannelObserver.updateWidgetRequests,
           [AppWidgetControl.appWidgetName, AppWidgetControl.appWidgetName]);
     });
@@ -187,18 +181,13 @@ void main() {
 
       await tester.runAsync(() => tester.tap(find.byIcon(Icons.skip_next_rounded)));
       expect(PlaybackControl.instance.currentSong, songs.last);
-      expect(appWidgetChannelObserver.saveWidgetDataLog,
-          [Tuple2("song", songs.last.contentUri), const Tuple2("playing", false)]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog, [("song", songs.last.contentUri), ("playing", false)]);
       expect(appWidgetChannelObserver.updateWidgetRequests, [AppWidgetControl.appWidgetName]);
 
       await tester.runAsync(() => tester.tap(find.byIcon(Icons.skip_next_rounded)));
       expect(PlaybackControl.instance.currentSong, songs.first);
-      expect(appWidgetChannelObserver.saveWidgetDataLog, [
-        Tuple2("song", songs.last.contentUri),
-        const Tuple2("playing", false),
-        Tuple2("song", songs.first.contentUri),
-        const Tuple2("playing", false)
-      ]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog,
+          [("song", songs.last.contentUri), ("playing", false), ("song", songs.first.contentUri), ("playing", false)]);
       expect(appWidgetChannelObserver.updateWidgetRequests,
           [AppWidgetControl.appWidgetName, AppWidgetControl.appWidgetName]);
     });
@@ -224,19 +213,14 @@ void main() {
       await tester.runAsync(() => tester.tap(button));
       expect(MusicPlayer.instance.playing, true);
       expect(MusicPlayer.handler!.running, true);
-      expect(appWidgetChannelObserver.saveWidgetDataLog,
-          [Tuple2("song", songWith().contentUri), const Tuple2("playing", true)]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog, [("song", songWith().contentUri), ("playing", true)]);
       expect(appWidgetChannelObserver.updateWidgetRequests, [AppWidgetControl.appWidgetName]);
 
       await tester.runAsync(() => tester.tap(button));
       expect(MusicPlayer.instance.playing, false);
       expect(MusicPlayer.handler!.running, true, reason: 'Handler should only stop when stopped, not when paused');
-      expect(appWidgetChannelObserver.saveWidgetDataLog, [
-        Tuple2("song", songWith().contentUri),
-        const Tuple2("playing", true),
-        Tuple2("song", songWith().contentUri),
-        const Tuple2("playing", false)
-      ]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog,
+          [("song", songWith().contentUri), ("playing", true), ("song", songWith().contentUri), ("playing", false)]);
       expect(appWidgetChannelObserver.updateWidgetRequests,
           [AppWidgetControl.appWidgetName, AppWidgetControl.appWidgetName]);
 

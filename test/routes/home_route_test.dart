@@ -149,8 +149,7 @@ void main() {
         reason: 'Player route must be offscreen',
       );
       await tester.runAsync(() => tester.pump()); // Wait for widget events from start to process.
-      expect(appWidgetChannelObserver.saveWidgetDataLog,
-          [("song", songWith().contentUri), ("playing", false)]);
+      expect(appWidgetChannelObserver.saveWidgetDataLog, [("song", songWith().contentUri), ("playing", false)]);
       expect(appWidgetChannelObserver.updateWidgetRequests, [AppWidgetControl.appWidgetName]);
     });
   });
