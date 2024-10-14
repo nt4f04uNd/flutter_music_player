@@ -5,20 +5,6 @@ import 'package:firebase_crashlytics_platform_interface/firebase_crashlytics_pla
 import '../observer/crashlytics.dart';
 import '../test.dart';
 
-// TODO: Remove this extension once we switch to Dart3.
-extension NullableIterableExtensions<T extends Object> on Iterable<T?> {
-  /// The non-`null` elements of this iterable.
-  ///
-  /// The same elements as this iterable, except that `null` values are omitted.
-  Iterable<T> get nonNulls sync* {
-    for (final element in this) {
-      if (element != null) {
-        yield element;
-      }
-    }
-  }
-}
-
 class FakeFirebaseApp extends MockFirebaseApp {
   static Future<void> install(TestWidgetsFlutterBinding binding) async {
     TestFirebaseCoreHostApi.setup(FakeFirebaseApp());
