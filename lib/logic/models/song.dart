@@ -153,7 +153,8 @@ class Song extends Content implements PlatformSong {
 
   static Song? fromMap(Map<String, dynamic> map) {
     try {
-      final dateAdded = map['dateAdded'] as int;return Song(
+      final dateAdded = map['dateAdded'] as int;
+      return Song(
         id: map['id'] as int,
         album: map['album'] as String?,
         albumId: map['albumId'] as int?,
