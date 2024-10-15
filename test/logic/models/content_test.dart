@@ -74,10 +74,6 @@ extension TestListMap on List<Map<String, dynamic>> {
   }
 }
 
-extension StringIterable on Iterable<String> {
-  bool containsAll(List<String> elements) => elements.every(this.contains);
-}
-
 void main() {
   group('Handles invalid or incomplete values from the media store', () {
     test('Handles invalid or incomplete albums', () async {
