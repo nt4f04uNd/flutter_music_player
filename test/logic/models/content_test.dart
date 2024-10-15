@@ -99,21 +99,20 @@ void main() {
         (validAlbum.copyWith({'id': 14, 'lastYear': null}), albumWith(id: 14, lastYear: null)),
         (validAlbum.copyWith({'id': 15}).copyWithout(['lastYear']), albumWith(id: 15, lastYear: null)),
         (validAlbum.copyWith({'id': 16, 'numberOfSongs': -1}), albumWith(id: 16, numberOfSongs: -1)),
+        (validAlbum.copyWith({'id': 17, 'numberOfSongs': null}), albumWith(id: 17, numberOfSongs: 0)),
+        (validAlbum.copyWith({'id': 18}).copyWithout(['numberOfSongs']), albumWith(id: 18, numberOfSongs: 0)),
         (
-          validAlbum.copyWith({'id': 17, 'lastYear': 2000, 'firstYear': 3000}), // Last year before first year
-          albumWith(id: 17, lastYear: 2000, firstYear: 3000),
+          validAlbum.copyWith({'id': 19, 'lastYear': 2000, 'firstYear': 3000}), // Last year before first year
+          albumWith(id: 19, lastYear: 2000, firstYear: 3000),
         ),
       ];
+      final propertiesThatCanBeMissing = ['albumArt', 'artistId', 'firstYear', 'lastYear', 'numberOfSongs'];
       final invalidAlbums = [
-        ...validAlbum.copyWithout(['albumArt', 'artistId', 'firstYear', 'lastYear']).subSets(),
-        ...validAlbum.withWrongTypes().whereNot(
-              (map) =>
-                  map['albumArt'] == null ||
-                  map['artistId'] == null ||
-                  map['firstYear'] == null ||
-                  map['lastYear'] == null,
-            ),
-      ].assignUniqueIds(startId: validAlbums.last.$1['id'] + 1);
+        ...validAlbum.copyWithout(propertiesThatCanBeMissing).subSets(),
+        ...validAlbum
+            .withWrongTypes()
+            .whereNot((map) => propertiesThatCanBeMissing.any((property) => map[property] == null)),
+      ].assignUniqueIds(startId: validAlbums.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
@@ -121,10 +120,12 @@ void main() {
           ..addAll(invalidAlbums);
       });
       expect(
-        ContentControl.instance.state.albums.values.sorted((item1, item2) => item1.id.compareTo(item2.id)),
-        validAlbums.map((element) => element.$2).toList(),
+        ContentControl.instance.state.albums.values
+            .sorted((item1, item2) => item1.id.compareTo(item2.id))
+            .map((album) => album.toMap()),
+        validAlbums.map((element) => element.$2.toMap()),
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 523);
+      expect(crashlyticsObserver.nonFatalErrorCount, 514);
     });
 
     test('Handles invalid or incomplete artists', () async {
@@ -142,7 +143,7 @@ void main() {
       final invalidArtists = [
         ...validArtist.subSets(),
         ...validArtist.withWrongTypes(),
-      ].assignUniqueIds(startId: validArtists.last.$1['id'] + 1);
+      ].assignUniqueIds(startId: validArtists.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
@@ -150,8 +151,10 @@ void main() {
           ..addAll(invalidArtists);
       });
       expect(
-        ContentControl.instance.state.artists.sorted((item1, item2) => item1.id.compareTo(item2.id)),
-        validArtists.map((element) => element.$2).toList(),
+        ContentControl.instance.state.artists
+            .sorted((item1, item2) => item1.id.compareTo(item2.id))
+            .map((artist) => artist.toMap()),
+        validArtists.map((element) => element.$2.toMap()),
       );
       expect(crashlyticsObserver.nonFatalErrorCount, 271);
     });
@@ -161,33 +164,37 @@ void main() {
       final validPlaylists = [
         (validPlaylist.copyWith({'id': 1}), playlistWith(id: 1)),
         (validPlaylist.copyWith({'id': 2, 'filesystemPath': ''}), playlistWith(id: 2, fileSystemPath: '')),
-        (validPlaylist.copyWith({'id': 3, 'dateAdded': -1}), playlistWith(id: 3, dateAdded: -1)),
-        (validPlaylist.copyWith({'id': 4, 'dateModified': -1}), playlistWith(id: 4, dateModified: -1)),
-        (validPlaylist.copyWith({'id': 5, 'name': ''}), playlistWith(id: 5, name: '')),
-        (validPlaylist.copyWith({'id': 6, 'songIds': []}), playlistWith(id: 6, songIds: [])),
+        (validPlaylist.copyWith({'id': 3, 'filesystemPath': null}), playlistWith(id: 3, fileSystemPath: null)),
+        (validPlaylist.copyWith({'id': 4}).copyWithout(['filesystemPath']), playlistWith(id: 4, fileSystemPath: null)),
+        (validPlaylist.copyWith({'id': 5, 'dateAdded': -1}), playlistWith(id: 5, dateAdded: -1)),
+        (validPlaylist.copyWith({'id': 6, 'dateModified': -1}), playlistWith(id: 6, dateModified: -1)),
+        (validPlaylist.copyWith({'id': 7, 'name': ''}), playlistWith(id: 7, name: '')),
+        (validPlaylist.copyWith({'id': 8, 'songIds': []}), playlistWith(id: 8, songIds: [])),
+        (validPlaylist.copyWith({'id': 9, 'songIds': null}), playlistWith(id: 9, songIds: [])),
+        (validPlaylist.copyWith({'id': 10}).copyWithout(['songIds']), playlistWith(id: 10, songIds: [])),
         (
-          validPlaylist.copyWith({'id': 7, 'dateAdded': 42, 'dateModified': null}),
-          playlistWith(id: 7, dateAdded: 42, dateModified: 42),
+          validPlaylist.copyWith({'id': 11, 'dateAdded': 42, 'dateModified': null}),
+          playlistWith(id: 11, dateAdded: 42, dateModified: 42)
         ),
         (
-          validPlaylist.copyWith({'id': 8, 'dateAdded': 42}).copyWithout(['dateModified']),
-          playlistWith(id: 8, dateAdded: 42, dateModified: 42),
+          validPlaylist.copyWith({'id': 12, 'dateAdded': 42}).copyWithout(['dateModified']),
+          playlistWith(id: 12, dateAdded: 42, dateModified: 42)
         ),
         (
           validPlaylist.copyWith({
-            'id': 9,
+            'id': 13,
             'songIds': [-1], // Invalid song id.
           }),
-          playlistWith(id: 9, songIds: [-1]),
+          playlistWith(id: 13, songIds: [-1])
         ),
       ];
+      final propertiesThatCanBeMissing = ['filesystemPath', 'dateModified', 'songIds'];
       final invalidPlaylists = [
-        ...validPlaylist.subSets().whereNot((map) => [
-              {'id', 'filesystemPath', 'dateAdded', 'name', 'songIds'},
-            ].any((keys) => const SetEquality().equals(keys, map.keys.toSet()))),
-        ...validPlaylist.withWrongTypes().whereNot((map) => map['dateModified'] == null || map['songIds'] == []),
+        ...validPlaylist.copyWithout(propertiesThatCanBeMissing).subSets(),
+        ...validPlaylist.withWrongTypes().whereNot(
+            (map) => propertiesThatCanBeMissing.any((property) => map[property] == null) || map['songIds'] == []),
         validPlaylist.copyWith({'dateAdded': null, 'dateModified': null}),
-      ].assignUniqueIds(startId: validPlaylists.last.$1['id'] + 1);
+      ].assignUniqueIds(startId: validPlaylists.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
@@ -195,10 +202,12 @@ void main() {
           ..addAll(invalidPlaylists);
       });
       expect(
-        ContentControl.instance.state.playlists.sorted((item1, item2) => item1.id.compareTo(item2.id)),
-        validPlaylists.map((element) => element.$2).toList(),
+        ContentControl.instance.state.playlists
+            .sorted((item1, item2) => item1.id.compareTo(item2.id))
+            .map((playlist) => playlist.toMap()),
+        validPlaylists.map((element) => element.$2.toMap()),
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 446);
+      expect(crashlyticsObserver.nonFatalErrorCount, 389);
     });
 
     test('Handles invalid or incomplete songs', () async {
@@ -225,54 +234,55 @@ void main() {
         (validSong.copyWith({'id': 19}).copyWithout(['track']), songWith(id: 19, track: null)),
         (validSong.copyWith({'id': 20, 'dateAdded': -1}), songWith(id: 20, dateAdded: -1)),
         (validSong.copyWith({'id': 21, 'dateModified': -1}), songWith(id: 21, dateModified: -1)),
-        (validSong.copyWith({'id': 22, 'duration': -1}), songWith(id: 22, duration: -1)),
-        (validSong.copyWith({'id': 23, 'size': -1}), songWith(id: 23, size: -1)),
-        (validSong.copyWith({'id': 24, 'filesystemPath': ''}), songWith(id: 24, filesystemPath: '')),
-        (validSong.copyWith({'id': 25, 'filesystemPath': null}), songWith(id: 25, filesystemPath: null)),
-        (validSong.copyWith({'id': 26}).copyWithout(['filesystemPath']), songWith(id: 26, filesystemPath: null)),
+        (validSong.copyWith({'id': 22, 'dateModified': null}), songWith(id: 22, dateModified: songWith().dateAdded)),
         (
-          validSong.copyWith({'id': 27, 'isFavoriteInMediaStore': null}),
-          songWith(id: 27, isFavoriteInMediaStore: false),
+          validSong.copyWith({'id': 23}).copyWithout(['dateModified']),
+          songWith(id: 23, dateModified: songWith().dateAdded)
+        ),
+        (validSong.copyWith({'id': 24, 'duration': -1}), songWith(id: 24, duration: -1)),
+        (validSong.copyWith({'id': 25, 'size': -1}), songWith(id: 25, size: -1)),
+        (validSong.copyWith({'id': 26, 'size': null}), songWith(id: 26, size: null)),
+        (validSong.copyWith({'id': 27}).copyWithout(['size']), songWith(id: 27, size: null)),
+        (validSong.copyWith({'id': 28, 'filesystemPath': ''}), songWith(id: 28, filesystemPath: '')),
+        (validSong.copyWith({'id': 29, 'filesystemPath': null}), songWith(id: 29, filesystemPath: null)),
+        (validSong.copyWith({'id': 30}).copyWithout(['filesystemPath']), songWith(id: 30, filesystemPath: null)),
+        (
+          validSong.copyWith({'id': 31, 'isFavoriteInMediaStore': null}),
+          songWith(id: 31, isFavoriteInMediaStore: false)
         ),
         (
-          validSong.copyWith({'id': 28}).copyWithout(['isFavoriteInMediaStore']),
-          songWith(id: 28, isFavoriteInMediaStore: false),
+          validSong.copyWith({'id': 32}).copyWithout(['isFavoriteInMediaStore']),
+          songWith(id: 32, isFavoriteInMediaStore: false)
         ),
-        (validSong.copyWith({'id': 29, 'generationAdded': -1}), songWith(id: 29, generationAdded: -1)),
-        (validSong.copyWith({'id': 30, 'generationAdded': null}), songWith(id: 30, generationAdded: null)),
-        (validSong.copyWith({'id': 31}).copyWithout(['generationAdded']), songWith(id: 31, generationAdded: null)),
-        (validSong.copyWith({'id': 32, 'generationModified': -1}), songWith(id: 32, generationModified: -1)),
-        (validSong.copyWith({'id': 33, 'generationModified': null}), songWith(id: 33, generationModified: null)),
+        (validSong.copyWith({'id': 33, 'generationAdded': -1}), songWith(id: 33, generationAdded: -1)),
+        (validSong.copyWith({'id': 34, 'generationAdded': null}), songWith(id: 34, generationAdded: null)),
+        (validSong.copyWith({'id': 35}).copyWithout(['generationAdded']), songWith(id: 35, generationAdded: null)),
+        (validSong.copyWith({'id': 36, 'generationModified': -1}), songWith(id: 36, generationModified: -1)),
+        (validSong.copyWith({'id': 37, 'generationModified': null}), songWith(id: 37, generationModified: null)),
         (
-          validSong.copyWith({'id': 34}).copyWithout(['generationModified']),
-          songWith(id: 34, generationModified: null),
+          validSong.copyWith({'id': 38}).copyWithout(['generationModified']),
+          songWith(id: 38, generationModified: null)
         ),
       ];
+      final propertiesThatCanBeMissing = [
+        'album',
+        'albumId',
+        'genre',
+        'genreId',
+        'track',
+        'dateModified',
+        'size',
+        'filesystemPath',
+        'isFavoriteInMediaStore',
+        'generationAdded',
+        'generationModified',
+      ];
       final invalidSongs = [
-        ...validSong.copyWithout([
-          'album',
-          'albumId',
-          'genre',
-          'genreId',
-          'track',
-          'filesystemPath',
-          'isFavoriteInMediaStore',
-          'generationAdded',
-          'generationModified',
-        ]).subSets(),
-        ...validSong.withWrongTypes().whereNot(
-              (map) =>
-                  map['album'] == null ||
-                  map['albumId'] == null ||
-                  map['genre'] == null ||
-                  map['genreId'] == null ||
-                  map['track'] == null ||
-                  map['filesystemPath'] == null ||
-                  map['isFavoriteInMediaStore'] == null ||
-                  map['generationAdded'] == null ||
-                  map['generationModified'] == null,
-            ),
-      ].assignUniqueIds(startId: validSongs.last.$1['id'] + 1);
+        ...validSong.copyWithout(propertiesThatCanBeMissing).subSets(),
+        ...validSong
+            .withWrongTypes()
+            .whereNot((map) => propertiesThatCanBeMissing.any((property) => map[property] == null))
+      ].assignUniqueIds(startId: validSongs.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
         crashlyticsObserver = CrashlyticsObserver(TestWidgetsFlutterBinding.ensureInitialized());
@@ -280,10 +290,12 @@ void main() {
           ..addAll(invalidSongs);
       });
       expect(
-        ContentControl.instance.state.allSongs.songs.sorted((item1, item2) => item1.id.compareTo(item2.id)),
-        validSongs.map((element) => element.$2).toList(),
+        ContentControl.instance.state.allSongs.songs
+            .sorted((item1, item2) => item1.id.compareTo(item2.id))
+            .map((song) => song.toMap()),
+        validSongs.map((element) => element.$2.toMap()),
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 1334);
+      expect(crashlyticsObserver.nonFatalErrorCount, 1140);
     });
   });
 }
