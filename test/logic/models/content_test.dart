@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 import '../../observer/observer.dart';
 import '../../test.dart';
 
-extension _TestMap on Map<String, dynamic> {
+extension on Map<String, dynamic> {
   Map<String, dynamic> copyWith(Map<String, dynamic> overwrites) {
     return Map.of(this)..addAll(overwrites);
   }
@@ -63,7 +63,7 @@ extension _TestMap on Map<String, dynamic> {
   }
 }
 
-extension _TestListMap on List<Map<String, dynamic>> {
+extension on List<Map<String, dynamic>> {
   List<Map<String, dynamic>> assignUniqueIds({required int startId}) {
     for (final element in this) {
       if (element['id'] is int) {
