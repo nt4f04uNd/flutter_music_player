@@ -164,18 +164,12 @@ void main() {
         (validPlaylist.copyWith({'id': 4}).copyWithout(['filesystemPath']), playlistWith(id: 4, fileSystemPath: null)),
         (validPlaylist.copyWith({'id': 5, 'dateAdded': -1}), playlistWith(id: 5, dateAdded: -1)),
         (validPlaylist.copyWith({'id': 6, 'dateModified': -1}), playlistWith(id: 6, dateModified: -1)),
-        (validPlaylist.copyWith({'id': 7, 'name': ''}), playlistWith(id: 7, name: '')),
-        (validPlaylist.copyWith({'id': 8, 'songIds': []}), playlistWith(id: 8, songIds: [])),
-        (validPlaylist.copyWith({'id': 9, 'songIds': null}), playlistWith(id: 9, songIds: [])),
-        (validPlaylist.copyWith({'id': 10}).copyWithout(['songIds']), playlistWith(id: 10, songIds: [])),
-        (
-          validPlaylist.copyWith({'id': 11, 'dateAdded': 42, 'dateModified': null}),
-          playlistWith(id: 11, dateAdded: 42, dateModified: 42)
-        ),
-        (
-          validPlaylist.copyWith({'id': 12, 'dateAdded': 42}).copyWithout(['dateModified']),
-          playlistWith(id: 12, dateAdded: 42, dateModified: 42)
-        ),
+        (validPlaylist.copyWith({'id': 7, 'dateModified': null}), playlistWith(id: 7, dateModified: null)),
+        (validPlaylist.copyWith({'id': 8}).copyWithout(['dateModified']), playlistWith(id: 8, dateModified: null)),
+        (validPlaylist.copyWith({'id': 9, 'name': ''}), playlistWith(id: 9, name: '')),
+        (validPlaylist.copyWith({'id': 10, 'songIds': []}), playlistWith(id: 10, songIds: [])),
+        (validPlaylist.copyWith({'id': 11, 'songIds': null}), playlistWith(id: 11, songIds: [])),
+        (validPlaylist.copyWith({'id': 12}).copyWithout(['songIds']), playlistWith(id: 12, songIds: [])),
         (
           validPlaylist.copyWith({
             'id': 13,
@@ -189,7 +183,6 @@ void main() {
         ...validPlaylist.copyWithout(propertiesThatCanBeMissing).subSets(),
         ...validPlaylist.withWrongTypes().whereNot(
             (map) => propertiesThatCanBeMissing.any((property) => map[property] == null) || map['songIds'] == []),
-        validPlaylist.copyWith({'dateAdded': null, 'dateModified': null}),
       ].assignUniqueIds(startId: validPlaylists.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
@@ -203,7 +196,7 @@ void main() {
             .map((playlist) => playlist.toMap()),
         validPlaylists.map((element) => element.$2.toMap()),
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 389);
+      expect(crashlyticsObserver.nonFatalErrorCount, 388);
     });
 
     test('Handles invalid or incomplete songs', () async {
