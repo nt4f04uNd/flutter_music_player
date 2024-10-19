@@ -9,17 +9,17 @@ extension _TestMap on Map<String, dynamic> {
   }
 
   Map<String, dynamic> copyWithout(List<String> keysToRemove) {
-    var map = Map.of(this);
+    final map = Map.of(this);
     keysToRemove.forEach(map.remove);
     return map;
   }
 
   Iterable<Map<String, dynamic>> subSets() sync* {
-    var subSets = [[]];
+    final subSets = [[]];
     yield {};
     for (final key in keys) {
-      for (var subSet in subSets.toList()) {
-        var newSubSet = subSet + [key];
+      for (final subSet in subSets.toList()) {
+        final newSubSet = subSet + [key];
         if (newSubSet.length >= keys.length) {
           continue;
         }
@@ -65,7 +65,7 @@ extension _TestMap on Map<String, dynamic> {
 
 extension _TestListMap on List<Map<String, dynamic>> {
   List<Map<String, dynamic>> assignUniqueIds({required int startId}) {
-    for (var element in this) {
+    for (final element in this) {
       if (element['id'] is int) {
         element['id'] = startId++;
       }
