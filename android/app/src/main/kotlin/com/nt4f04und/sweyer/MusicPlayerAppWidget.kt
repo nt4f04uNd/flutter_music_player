@@ -55,7 +55,7 @@ class MusicPlayerAppWidget : HomeWidgetProvider() {
     }
 
     /**
-     * Update all widgets to for the current playback state and their widget size.
+     * Update all widgets for the current playback state and their widget size.
      * [widgetData] contains the current play state and currently playing song.
      */
     private fun updateWidgets(context: Context, widgetInfoProvider: WidgetInfoProvider, widgetData: SharedPreferences) {
