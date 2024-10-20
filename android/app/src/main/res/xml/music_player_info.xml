@@ -2,7 +2,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialKeyguardLayout="@layout/music_player_widget"
     android:initialLayout="@layout/music_player_widget"
-    android:description="@string/musicPlayerWidgetDescription"
+    android:description="@string/music_player_widget_description"
     android:minWidth="160dp"
     android:minHeight="160dp"
     android:minResizeWidth="@dimen/musicPlayerWidgetButtonSize"
