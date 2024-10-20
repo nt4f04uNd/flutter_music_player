@@ -1,6 +1,5 @@
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
-import 'package:sweyer/logic/app_widget.dart';
 
 import '../observer/app_widget.dart';
 import '../test.dart';

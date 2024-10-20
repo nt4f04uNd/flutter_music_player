@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sweyer/constants.dart';
 import 'package:sweyer/routes/settings_route/theme_settings.dart';
-import 'package:sweyer/logic/app_widget.dart';
 
 import '../observer/app_widget.dart';
 import '../observer/observer.dart';
