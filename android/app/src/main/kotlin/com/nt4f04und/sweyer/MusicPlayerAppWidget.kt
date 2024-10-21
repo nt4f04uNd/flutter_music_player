@@ -116,7 +116,7 @@ class MusicPlayerAppWidget : HomeWidgetProvider() {
                     R.id.music_player_widget_song_art,
                     // On Android versions since S the system rounds the corners for us.
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) songArt else createRoundedBitmap(
-                        songArt, size, context.resources.getDimension(R.dimen.appWidgetRadius)
+                        songArt, size, context.resources.getDimension(R.dimen.appWidgetBackgroundRadius)
                     )
                 )
                 setViewVisibility(R.id.music_player_widget_song_art, VISIBLE)

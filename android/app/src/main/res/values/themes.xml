@@ -2,10 +2,10 @@
 <resources>
     <style name="Theme.Android.AppWidgetContainer" parent="@android:style/Theme.DeviceDefault">
         <!-- Radius of the outer bound of widgets to make the rounded corners -->
-        <item name="appWidgetRadius">@dimen/appWidgetRadius</item>
+        <item name="appWidgetBackgroundRadius">@dimen/appWidgetBackgroundRadius</item>
         <!--
         Radius of the inner view's bound of widgets to make the rounded corners.
-        It needs to be 8dp or less than the value of appWidgetRadius
+        It needs to be 8dp or less than the value of appWidgetBackgroundRadius
         -->
         <item name="appWidgetInnerRadius">@dimen/appWidgetInnerRadius</item>
         <item name="appWidgetPadding">0dp</item>
