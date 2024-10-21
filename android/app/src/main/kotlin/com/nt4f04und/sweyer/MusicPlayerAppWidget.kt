@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.*
 import android.net.Uri
@@ -202,7 +203,7 @@ internal class WidgetInfoProvider(
     private fun calculateSizes(newOptions: Bundle? = null): SizeInfo {
         var maxWidth = 0
         var maxHeight = 0
-        val isPortraitOrientation = context.resources.getBoolean(R.bool.isPortraitScreen)
+        val isPortraitOrientation = context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         val sizes = appWidgetIds.map { appWidgetId ->
             val width: Int
             val height: Int
