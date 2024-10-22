@@ -260,7 +260,7 @@ object AudioServiceBackgroundIntent {
      * Build a pending intent for the given [context] emulating a key-press of the given [keyEvent] to the AudioService.
      */
     private fun getIntent(context: Context, keyEvent: KeyEvent): PendingIntent {
-        val intent = Intent(context, com.ryanheise.audioservice.AudioService::class.java)
+        val intent = Intent(context, com.ryanheise.audioservice.MediaButtonReceiver::class.java)
         intent.action = Intent.ACTION_MEDIA_BUTTON
         intent.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent)
         var flags = PendingIntent.FLAG_UPDATE_CURRENT
@@ -272,11 +272,7 @@ object AudioServiceBackgroundIntent {
         } else {
             intent.type = keyEvent.toString()
         }
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            PendingIntent.getForegroundService(context, 0, intent, flags)
-        } else {
-            PendingIntent.getService(context, 0, intent, flags)
-        }
+        return PendingIntent.getBroadcast(context, 0, intent, flags)
     }
 
     /**
