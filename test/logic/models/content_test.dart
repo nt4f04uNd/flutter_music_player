@@ -4,6 +4,14 @@ import '../../observer/observer.dart';
 import '../../test.dart';
 
 extension on Map<String, dynamic> {
+  Iterable<Map<String, dynamic>> createVariantsWithMissingNonNullableElements(List<String> nullableElements) {
+    return copyWithout(nullableElements).subSets();
+  }
+
+  Iterable<Map<String, dynamic>> createVariantsWhereElementsHaveInvalidTypes(List<String> nullableElements) {
+    return withWrongTypes().whereNot((map) => nullableElements.any((property) => map[property] == null));
+  }
+
   Map<String, dynamic> copyWith(Map<String, dynamic> overwrites) {
     return Map.of(this)..addAll(overwrites);
   }
@@ -104,10 +112,8 @@ void main() {
       ];
       final propertiesThatCanBeMissing = ['albumArt', 'artistId', 'firstYear', 'lastYear', 'numberOfSongs'];
       final invalidAlbums = [
-        ...validAlbum.copyWithout(propertiesThatCanBeMissing).subSets(),
-        ...validAlbum
-            .withWrongTypes()
-            .whereNot((map) => propertiesThatCanBeMissing.any((property) => map[property] == null)),
+        ...validAlbum.createVariantsWithMissingNonNullableElements(propertiesThatCanBeMissing),
+        ...validAlbum.createVariantsWhereElementsHaveInvalidTypes(propertiesThatCanBeMissing),
       ].assignUniqueIds(startId: validAlbums.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
@@ -120,8 +126,13 @@ void main() {
             .sorted((item1, item2) => item1.id.compareTo(item2.id))
             .map((album) => album.toMap()),
         validAlbums.map((element) => element.$2.toMap()),
+        reason: "Should be able to correctly parse all valid albums",
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 514);
+      expect(
+        crashlyticsObserver.nonFatalErrorCount,
+        invalidAlbums.length,
+        reason: "Should reject invalid albums and report non-fatal errors",
+      );
     });
 
     test('Handles invalid or incomplete artists', () async {
@@ -136,9 +147,10 @@ void main() {
           artistWith(id: 5, numberOfAlbums: 1, numberOfTracks: 0),
         ),
       ];
+      final propertiesThatCanBeMissing = <String>[];
       final invalidArtists = [
-        ...validArtist.subSets(),
-        ...validArtist.withWrongTypes(),
+        ...validArtist.createVariantsWithMissingNonNullableElements(propertiesThatCanBeMissing),
+        ...validArtist.createVariantsWhereElementsHaveInvalidTypes(propertiesThatCanBeMissing),
       ].assignUniqueIds(startId: validArtists.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
@@ -151,8 +163,13 @@ void main() {
             .sorted((item1, item2) => item1.id.compareTo(item2.id))
             .map((artist) => artist.toMap()),
         validArtists.map((element) => element.$2.toMap()),
+        reason: "Should be able to correctly parse all valid artists",
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 271);
+      expect(
+        crashlyticsObserver.nonFatalErrorCount,
+        invalidArtists.length,
+        reason: "Should reject invalid artists and report non-fatal errors",
+      );
     });
 
     test('Handles invalid or incomplete playlists', () async {
@@ -180,9 +197,10 @@ void main() {
       ];
       final propertiesThatCanBeMissing = ['filesystemPath', 'dateModified', 'songIds'];
       final invalidPlaylists = [
-        ...validPlaylist.copyWithout(propertiesThatCanBeMissing).subSets(),
-        ...validPlaylist.withWrongTypes().whereNot(
-            (map) => propertiesThatCanBeMissing.any((property) => map[property] == null) || map['songIds'] == []),
+        ...validPlaylist.createVariantsWithMissingNonNullableElements(propertiesThatCanBeMissing),
+        ...validPlaylist
+            .createVariantsWhereElementsHaveInvalidTypes(propertiesThatCanBeMissing)
+            .whereNot((map) => map['songIds'] == []),
       ].assignUniqueIds(startId: validPlaylists.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
@@ -195,8 +213,13 @@ void main() {
             .sorted((item1, item2) => item1.id.compareTo(item2.id))
             .map((playlist) => playlist.toMap()),
         validPlaylists.map((element) => element.$2.toMap()),
+        reason: "Should be able to correctly parse all valid playlists",
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 388);
+      expect(
+        crashlyticsObserver.nonFatalErrorCount,
+        invalidPlaylists.length,
+        reason: "Should reject invalid playlists and report non-fatal errors",
+      );
     });
 
     test('Handles invalid or incomplete songs', () async {
@@ -267,10 +290,8 @@ void main() {
         'generationModified',
       ];
       final invalidSongs = [
-        ...validSong.copyWithout(propertiesThatCanBeMissing).subSets(),
-        ...validSong
-            .withWrongTypes()
-            .whereNot((map) => propertiesThatCanBeMissing.any((property) => map[property] == null))
+        ...validSong.createVariantsWithMissingNonNullableElements(propertiesThatCanBeMissing),
+        ...validSong.createVariantsWhereElementsHaveInvalidTypes(propertiesThatCanBeMissing),
       ].assignUniqueIds(startId: validSongs.last.$2.id + 1);
       late CrashlyticsObserver crashlyticsObserver;
       await setUpAppTest(() {
@@ -283,8 +304,13 @@ void main() {
             .sorted((item1, item2) => item1.id.compareTo(item2.id))
             .map((song) => song.toMap()),
         validSongs.map((element) => element.$2.toMap()),
+        reason: "Should be able to correctly parse all valid songs",
       );
-      expect(crashlyticsObserver.nonFatalErrorCount, 1140);
+      expect(
+        crashlyticsObserver.nonFatalErrorCount,
+        invalidSongs.length,
+        reason: "Should reject invalid songs and report non-fatal errors",
+      );
     });
   });
 }
