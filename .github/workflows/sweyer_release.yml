@@ -23,7 +23,7 @@ jobs:
 
       - name: ☂ Upload Code Coverage
         if: ${{ github.event.inputs.skip-tests == 'false' }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
