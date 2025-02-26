@@ -36,7 +36,10 @@ runs:
 
     - name: 🧪 Run Tests
       shell: bash
-      run: flutter test --no-pub --test-randomize-ordering-seed random ${{inputs.testing_arguments}}
+      run: |
+        for i in $(seq 1 100); do
+          flutter test --no-pub --test-randomize-ordering-seed random ${{inputs.testing_arguments}}
+        done
 
     - name: 📁 Save golden test failures artifacts
       if: always()

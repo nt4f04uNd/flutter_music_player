@@ -1,15 +1,16 @@
 import '../test.dart';
 
 void main() {
-  setUp(() async {
-    await setUpAppTest();
-  });
-
   testWidgets('SongTile - tapping opens player route', (WidgetTester tester) async {
     await tester.runAppTest(() async {
+      expect(MusicPlayer.handler!.running, false);
       await tester.tap(find.byType(SongTile));
-      await tester.pumpAndSettle();
+      expect(MusicPlayer.handler!.running, true);
+      await tester.pump(); // Flush micro-tasks so to flush handling of the tap.
+      // Don't use `pumpAndSettle` because we have animations because we are playing a song.
+      await tester.pump(const Duration(seconds: 1));
       expect(playerRouteController.value, 1.0);
+      expect(MusicPlayer.handler!.running, true);
     });
   });
 

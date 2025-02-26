@@ -4,10 +4,6 @@ import 'package:flutter/material.dart';
 import '../test.dart';
 
 void main() {
-  setUp(() async {
-    await setUpAppTest();
-  });
-
   testWidgets('can expand/collapse by tapping the button', (WidgetTester tester) async {
     await tester.runAppTest(() async {
       // Expand the route
@@ -85,7 +81,7 @@ void main() {
       /// 1 - from [SongTile]
       /// 2 - from [TrackPanel]
       /// 3 and 4 - from [PlayerRoute] - it shows current and previous song arts and animates between them
-      /// 5 - also from [PlayerRoute] invisible overlay, used to extract art color 
+      /// 5 - also from [PlayerRoute] invisible overlay, used to extract art color
 
       final currentSong = PlaybackControl.instance.currentSong;
       expect(find.text(currentSong.title), findsNWidgets(3));
@@ -131,11 +127,10 @@ void main() {
       songWith(id: 1),
       songWith(id: 2),
     ]);
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = songs.toList();
-    });
-    PlaybackControl.instance.changeSong(songs[1]);
-    await tester.runAppTest(() async {
+    }, () async {
+      PlaybackControl.instance.changeSong(songs[1]);
       // Expand the route
       await tester.expandPlayerRoute();
 
@@ -155,11 +150,10 @@ void main() {
       songWith(id: 1),
       songWith(id: 2),
     ]);
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = songs.toList();
-    });
-    PlaybackControl.instance.changeSong(songs[1]);
-    await tester.runAppTest(() async {
+    }, () async {
+      PlaybackControl.instance.changeSong(songs[1]);
       // Expand the route
       await tester.expandPlayerRoute();
 
