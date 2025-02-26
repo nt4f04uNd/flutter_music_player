@@ -29,10 +29,10 @@ packages:
     dependency: "direct main"
     description:
       name: android_content_provider
-      sha256: "847db497f837334c11d72d4a71b1c496562f0fd7c97710315e0ad5ee9cbfe593"
+      sha256: c39dae7c8a520e11d210690d1340bbc86c871271b3f501a67724baff2f7da167
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   animations:
     dependency: "direct main"
     description:

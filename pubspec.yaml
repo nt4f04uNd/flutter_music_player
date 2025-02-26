@@ -46,7 +46,7 @@ dependencies:
   clock: ^1.1.0
   styled_text: ^8.1.0
 #  android_content_provider: ^0.4.1
-  android_content_provider: 0.4.1  # TODO: Switch back to caret syntax after updating to Flutter 3.24
+  android_content_provider: 0.4.2  # TODO: Switch back to caret syntax after updating to Flutter 3.24
   collection: ^1.16.0
   theme_tailor_annotation: ^3.0.1
   riverpod: ^2.6.1
