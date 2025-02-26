@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 export 'package:sweyer/sweyer.dart';
@@ -5,6 +6,7 @@ export 'package:flutter/foundation.dart';
 export 'package:flutter_test/flutter_test.dart';
 import 'package:android_content_provider/android_content_provider.dart';
 import 'package:clock/clock.dart';
+import 'package:test_api/src/backend/invoker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -84,157 +86,200 @@ const kScreenWidth = 450.0;
 const kScreenPixelRatio = 3.0;
 const kScreenSize = Size(kScreenWidth, kScreenHeight);
 
-/// Sets the fake data providers and initializes the app state.
-///
-/// The [configureFakes] callback can be used to modify the fake data providers
-/// before the controls will load it.
-Future<void> setUpAppTest([VoidCallback? configureFakes]) async {
-  final binding = TestWidgetsFlutterBinding.ensureInitialized();
-  for (TestFlutterView view in binding.platformDispatcher.views) {
-    view.physicalSize = kScreenSize * kScreenPixelRatio;
-    view.devicePixelRatio = kScreenPixelRatio;
+extension AppInitExtension on TestWidgetsFlutterBinding {
+  /// Run a test that doesn't need the App UI using the following procedure:
+  ///  1. Initializes the application, optionally running [initialization] when all fakes are set up
+  ///     before the [ContentControl] is initialized.
+  ///  2. Runs the test from the [callback].
+  ///  3. Stops and disposes the player.
+  ///  4. Flushes all micro-tasks and stream events.
+  ///
+  /// This method is preferred for tests that don't interact with the user interface layer.
+  /// See also [WidgetTesterExtension.runAppTest] for running a test which initializes the app
+  /// and in addition loads the user interface for tests that want to test the user interface.
+  Future<void> runAppTestWithoutUi(FutureOr<void> Function() callback, {VoidCallback? initialization}) async {
+    addTearDown(postTest);
+    return runTest(
+      () => withClock(clock, () async {
+        await _setUpAppTest(initialization);
+        try {
+          await callback();
+        } finally {
+          await MusicPlayer.instance.stop();
+          await MusicPlayer.instance.dispose();
+          // Wait for any asynchronous events and stream callbacks to finish.
+          await pump(const Duration(seconds: 1));
+        }
+      }),
+      () {},
+    );
   }
 
-  // Fake prefs values.
-  //
-  // Set empty values, because Windows implements shared_preferences
-  // without plugin code, thus works in tests, which is undesirable,
-  // because it changes test results
-  // https://github.com/flutter/flutter/issues/95951#issuecomment-1002972723
-  NFPrefs.prefs = null;
-  await NFPrefs.prefs?.clear();
-  SharedPreferences.setMockInitialValues({});
+  /// Sets the fake data providers and initializes the app state.
+  ///
+  /// The [configureFakes] callback can be used to modify the fake data providers
+  /// before the controls will load it.
+  Future<void> _setUpAppTest([VoidCallback? configureFakes]) async {
+    assert(inTest, "setUpAppTest must be called in a test, otherwise it doesn't use the correct AsyncZone");
+    for (TestFlutterView view in platformDispatcher.views) {
+      view.physicalSize = kScreenSize * kScreenPixelRatio;
+      view.devicePixelRatio = kScreenPixelRatio;
+    }
 
-  // Reset any state
-  DeviceInfoControl.instance.dispose();
-  ContentControl.instance.dispose();
-  AppRouter.instance = AppRouter();
+    // Fake prefs values.
+    //
+    // Set empty values, because Windows implements shared_preferences
+    // without plugin code, thus works in tests, which is undesirable,
+    // because it changes test results
+    // https://github.com/flutter/flutter/issues/95951#issuecomment-1002972723
+    NFPrefs.prefs = null;
+    await NFPrefs.prefs?.clear();
+    SharedPreferences.setMockInitialValues({});
 
-  // Set up fakes
-  SystemUiStyleController.instance = FakeSystemUiStyleController();
-  Backend.instance = FakeBackend();
-  DeviceInfoControl.instance = FakeDeviceInfoControl();
-  FavoritesControl.instance = FakeFavoritesControl();
-  PermissionsChannelObserver(binding); // Grant all permissions by default.
-  SweyerPluginPlatform.instance = FakeSweyerPluginPlatform(binding);
-  QueueControl.instance = FakeQueueControl();
-  ThemeControl.instance = FakeThemeControl();
-  JustAudioPlatform.instance = MockJustAudio(binding);
-  PackageInfoPlatform.instance = MethodChannelPackageInfo();
-  PlayerInterfaceColorStyleControl.instance = PlayerInterfaceColorStyleControl();
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('dev.fluttercommunity.plus/package_info'),
-      (MethodCall methodCall) async {
-    return {
-      'appName': constants.Config.applicationTitle,
-      'packageName': 'com.nt4f04und.sweyer',
-      'version': '1.0.0',
-      'buildNumber': '0',
-    };
-  });
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('com.ryanheise.audio_service.client.methods'), (MethodCall methodCall) async {
-    return {};
-  });
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('com.ryanheise.audio_service.handler.methods'), (MethodCall methodCall) async {
-    return {};
-  });
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('com.ryanheise.audio_session'),
-      (MethodCall methodCall) async {
-    return null;
-  });
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(AndroidContentResolver.methodChannel,
-      (MethodCall methodCall) async {
-    return null;
-  });
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'),
-      (MethodCall methodCall) async {
-    if (methodCall.method == 'getTemporaryDirectory' || methodCall.method == 'getApplicationSupportDirectory') {
-      Directory('./temp').createSync();
-      return './temp';
-    }
-    return null;
-  });
-  binding.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('com.tekartik.sqflite'),
-      (MethodCall methodCall) async {
-    if (methodCall.method == 'getDatabasesPath') {
-      Directory('./temp').createSync();
-      return './temp';
-    }
-    if (methodCall.method == 'openDatabase') {
-      return 0;
-    }
-    if (methodCall.method == 'query') {
+    // Reset any state
+    DeviceInfoControl.instance.dispose();
+    ContentControl.instance.dispose();
+    AppRouter.instance = AppRouter();
+
+    // Set up fakes
+    SystemUiStyleController.instance = FakeSystemUiStyleController();
+    Backend.instance = FakeBackend();
+    DeviceInfoControl.instance = FakeDeviceInfoControl();
+    FavoritesControl.instance = FakeFavoritesControl();
+    PermissionsChannelObserver(this); // Grant all permissions by default.
+    SweyerPluginPlatform.instance = FakeSweyerPluginPlatform(this);
+    QueueControl.instance = FakeQueueControl();
+    ThemeControl.instance = FakeThemeControl();
+    JustAudioPlatform.instance = MockJustAudio(this);
+    PackageInfoPlatform.instance = MethodChannelPackageInfo();
+    PlayerInterfaceColorStyleControl.instance = PlayerInterfaceColorStyleControl();
+    defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('dev.fluttercommunity.plus/package_info'),
+        (MethodCall methodCall) async {
+      return {
+        'appName': constants.Config.applicationTitle,
+        'packageName': 'com.nt4f04und.sweyer',
+        'version': '1.0.0',
+        'buildNumber': '0',
+      };
+    });
+    defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('com.ryanheise.audio_service.client.methods'),
+        (MethodCall methodCall) async {
       return {};
-    }
-    if (methodCall.method == 'execute') {
+    });
+    defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('com.ryanheise.audio_service.handler.methods'),
+        (MethodCall methodCall) async {
+      return {};
+    });
+    defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('com.ryanheise.audio_session'),
+        (MethodCall methodCall) async {
       return null;
-    }
-    return null;
-  });
-  LicenseRegistry.reset();
-  LicenseRegistry.addLicense(() => Stream.value(const FakeLicenseEntry()));
+    });
+    defaultBinaryMessenger.setMockMethodCallHandler(AndroidContentResolver.methodChannel,
+        (MethodCall methodCall) async {
+      return null;
+    });
+    defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'),
+        (MethodCall methodCall) async {
+      if (methodCall.method == 'getTemporaryDirectory' || methodCall.method == 'getApplicationSupportDirectory') {
+        Directory('./temp').createSync();
+        return './temp';
+      }
+      return null;
+    });
+    defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('com.tekartik.sqflite'),
+        (MethodCall methodCall) async {
+      if (methodCall.method == 'getDatabasesPath') {
+        Directory('./temp').createSync();
+        return './temp';
+      }
+      if (methodCall.method == 'openDatabase') {
+        return 0;
+      }
+      if (methodCall.method == 'query') {
+        return {};
+      }
+      if (methodCall.method == 'execute') {
+        return null;
+      }
+      return null;
+    });
+    LicenseRegistry.reset();
+    LicenseRegistry.addLicense(() => Stream.value(const FakeLicenseEntry()));
 
-  configureFakes?.call();
+    configureFakes?.call();
 
-  // Set up regular classes
-  PlaybackControl.instance = PlaybackControl();
-  ContentControl.instance = ContentControl();
+    // Set up regular classes
+    PlaybackControl.instance = PlaybackControl();
+    ContentControl.instance = ContentControl();
 
-  // Default initialization process from main.dart
-  await NFPrefs.initialize();
-  await SearchHistory.instance.clear();
+    // Default initialization process from main.dart
+    await NFPrefs.initialize();
+    await SearchHistory.instance.clear();
 
-  await DeviceInfoControl.instance.init();
-  ThemeControl.instance.init();
-  ThemeControl.instance.initSystemUi();
-  await Permissions.instance.init();
-  if (binding.inTest) {
-    await binding.runAsync(() => ContentControl.instance.init());
-  } else {
-    await ContentControl.instance.init();
+    await DeviceInfoControl.instance.init();
+    ThemeControl.instance.init();
+    ThemeControl.instance.initSystemUi();
+    await Permissions.instance.init();
+    final contentInitFuture = ContentControl.instance.init();
+    // Flush micro-tasks to allow all stream events to propagate to their listeners.
+    await pump(const Duration(seconds: 1));
+    await contentInitFuture;
+    // Called in the [App] widget
+    NFWidgets.init(
+      navigatorKey: AppRouter.instance.navigatorKey,
+      routeObservers: [routeObserver, homeRouteObserver],
+    );
   }
-
-  // Called in the [App] widget
-  NFWidgets.init(
-    navigatorKey: AppRouter.instance.navigatorKey,
-    routeObservers: [routeObserver, homeRouteObserver],
-  );
 }
 
 extension WidgetTesterExtension on WidgetTester {
-  /// A template for this:
-  ///  1. pumps the app
-  ///  2. runs the test from the [callback]
-  ///  3. stops and disposes the player
-  ///  4. optionally, runs [goldenCaptureCallback]. It would time out if was ran before player is disposed in [callback].
-  ///  5. un-pumps the screen
-  Future<void> runAppTest(AsyncCallback callback, {AsyncCallback? goldenCaptureCallback}) async {
+  /// Run a test that uses the App UI using the following procedure:
+  ///  1. Initializes the application, optionally running [initialization] when all fakes are set up
+  ///     before the [ContentControl] is initialized.
+  ///  2. Optionally, runs [postInitialization] after [ContentControl] is initialized.
+  ///  3. Pumps the app.
+  ///  4. Runs the test from the [callback].
+  ///  5. Optionally, runs [goldenCaptureCallback].
+  ///  6. Stops and disposes the player.
+  ///  7. Un-pumps the screen and flushes all micro-tasks and stream events.
+  ///
+  /// See also [AppInitExtension.runAppTestWithoutUi] for running a test that requires the app to be initialized
+  /// but doesn't need to interact with the user interface.
+  Future<void> runAppTest(
+    AsyncCallback callback, {
+    AsyncCallback? goldenCaptureCallback,
+    VoidCallback? initialization,
+    VoidCallback? postInitialization,
+  }) async {
     await withClock(binding.clock, () async {
-      // App only supports vertical orientation, so switch tests to use it.
-      await binding.setSurfaceSize(kScreenSize);
-      await pumpWidget(ProviderScope(
-        overrides: [
-          playerInterfaceColorStyleArtColorBuilderProvider
-              .overrideWithValue(FakePlayerInterfaceColorStyleArtColorBuilder())
-        ],
-        child: const App(debugShowCheckedModeBanner: false),
-      ));
-      await pump();
-      await callback();
-      await runAsync(() async {
+      await binding._setUpAppTest(initialization);
+      try {
+        postInitialization?.call();
+        // App only supports vertical orientation, so switch tests to use it.
+        await binding.setSurfaceSize(kScreenSize);
+        await pumpWidget(ProviderScope(
+          overrides: [
+            playerInterfaceColorStyleArtColorBuilderProvider
+                .overrideWithValue(FakePlayerInterfaceColorStyleArtColorBuilder())
+          ],
+          child: const App(debugShowCheckedModeBanner: false),
+        ));
+        await pump();
+        await callback();
+        await goldenCaptureCallback?.call();
+      } finally {
         // Don't leak player state between tests.
-        // Delay needed for proper disposal in some tests.
-        await Future.delayed(const Duration(milliseconds: 1));
         await MusicPlayer.instance.stop();
         await MusicPlayer.instance.dispose();
-      });
-      await goldenCaptureCallback?.call();
-      // Un-pump, in case we have any real animations running,
-      // so the pumpAndSettle on the next line doesn't hang on.
-      await pumpWidget(const SizedBox());
-      // Wait for ui animations.
-      await pumpAndSettle();
+        // Un-pump, in case we have any real animations running,
+        // so the pumpAndSettle at the end doesn't hang forever.
+        await pumpWidget(const SizedBox());
+        // Wait for any asynchronous events and stream callbacks to finish.
+        await pump(const Duration(seconds: 1));
+        // Wait for any remaining system UI animations to settle.
+        // App animations should have already stopped after un-pumping above.
+        await pumpAndSettle();
+      }
     });
   }
 
@@ -307,6 +352,9 @@ void testAppGoldens(
   bool? skip,
   Object? tags = _defaultTagObject,
   Set<PlayerInterfaceColorStyle> playerInterfaceColorStylesToTest = const {_defaultPlayerInterfaceColorStyle},
+  VoidCallback? initialization,
+  VoidCallback? postInitialization,
+  CustomPump? customGoldenPump,
 }) {
   assert(playerInterfaceColorStylesToTest.isNotEmpty);
   for (final lightTheme in [false, true]) {
@@ -317,10 +365,9 @@ void testAppGoldens(
       final testDescription = getTestDescription(
         lightTheme: lightTheme,
         playerInterfaceColorStyle: nonDefaultPlayerInterfaceColorStyle ? playerInterfaceColorStyle : null,
-      );
-
+      ).buildDescription(description);
       testGoldens(
-        testDescription.buildDescription(description),
+        testDescription,
         (tester) async {
           final previousDeterministicCursor = EditableText.debugDeterministicCursor;
           addTearDown(() {
@@ -329,13 +376,26 @@ void testAppGoldens(
             _testersPlayerInterfaceColorStyle.remove(tester);
           });
           EditableText.debugDeterministicCursor = true;
-          ThemeControl.instance.setThemeLightMode(lightTheme);
-          Settings.playerInterfaceColorStyle.set(playerInterfaceColorStyle);
           _testersLightTheme[tester] = lightTheme;
           if (nonDefaultPlayerInterfaceColorStyle) {
             _testersPlayerInterfaceColorStyle[tester] = playerInterfaceColorStyle;
           }
-          return await test(tester);
+          return tester.runAppTest(
+            initialization: () => initialization?.call(),
+            postInitialization: () {
+              ThemeControl.instance.setThemeLightMode(lightTheme);
+              Settings.playerInterfaceColorStyle.set(playerInterfaceColorStyle);
+              postInitialization?.call();
+            },
+            () => test(tester),
+            goldenCaptureCallback: () {
+              final group = Invoker.current!.liveTest.test.name.split(testDescription)[0].trim().replaceAll(' ', '.');
+              return tester.screenMatchesGolden(
+                "$group.${description.replaceAll(' ', '.')}",
+                customPump: customGoldenPump,
+              );
+            },
+          );
         },
         tags: tags != _defaultTagObject ? tags : GoldenToolkit.configuration.tags,
       );

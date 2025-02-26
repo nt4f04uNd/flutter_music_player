@@ -14,10 +14,11 @@ void main() {
     final song3 = songWith(id: 4, track: '3', title: 'Third Song');
     final song4 = songWith(id: 1, track: '4', title: 'Fourth Song');
     final song10 = songWith(id: 3, track: '10', title: 'Tenth Song');
-    await setUpAppTest(() {
+    await TestWidgetsFlutterBinding.ensureInitialized().runAppTestWithoutUi(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = [nullSong1, nullSong2, song1, song2, song3, song4, song10];
+    }, () {
+      expect(album.songs, [song1, song2, song3, song4, song10, nullSong1, nullSong2]);
     });
-    expect(album.songs, [song1, song2, song3, song4, song10, nullSong1, nullSong2]);
   });
 
   test('Sorts tracks with total track count', () async {
@@ -27,10 +28,11 @@ void main() {
     final song3 = songWith(id: 4, track: '3/X', title: 'Third Song');
     final song4 = songWith(id: 1, track: '4/0', title: 'Fourth Song');
     final song10 = songWith(id: 3, track: '10/10', title: 'Tenth Song');
-    await setUpAppTest(() {
+    await TestWidgetsFlutterBinding.ensureInitialized().runAppTestWithoutUi(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = [nullSong1, song1, song2, song3, song4, song10];
+    }, () {
+      expect(album.songs, [song1, song2, song3, song4, song10, nullSong1]);
     });
-    expect(album.songs, [song1, song2, song3, song4, song10, nullSong1]);
   });
 
   test('Sorts tracks with spaces in track field', () async {
@@ -40,9 +42,10 @@ void main() {
     final song3 = songWith(id: 4, track: '3 /  10', title: 'Third Song');
     final song4 = songWith(id: 1, track: ' 4 / 10 ', title: 'Fourth Song');
     final song10 = songWith(id: 3, track: ' 10 /10', title: 'Tenth Song');
-    await setUpAppTest(() {
+    await TestWidgetsFlutterBinding.ensureInitialized().runAppTestWithoutUi(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = [nullSong1, song1, song2, song3, song4, song10];
+    }, () {
+      expect(album.songs, [song1, song2, song3, song4, song10, nullSong1]);
     });
-    expect(album.songs, [song1, song2, song3, song4, song10, nullSong1]);
   });
 }

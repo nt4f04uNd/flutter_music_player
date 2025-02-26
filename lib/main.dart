@@ -171,6 +171,14 @@ class _AppState extends State<App> with TickerProviderStateMixin {
   }
 
   @override
+  void dispose() {
+    _playerRouteController.dispose();
+    _drawerController.dispose();
+    playerRouteControllerInitialized = false;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MediaQueryWrapper(
       child: Consumer(builder: (context, ref, child) {

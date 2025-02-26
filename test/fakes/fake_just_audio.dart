@@ -251,6 +251,7 @@ class MockAudioPlayer implements AudioPlayerPlatform {
   Future<DisposeResponse> dispose(DisposeRequest request) async {
     _processingState = ProcessingStateMessage.idle;
     _broadcastPlaybackEvent();
+    _playTimer?.cancel();
     return DisposeResponse();
   }
 

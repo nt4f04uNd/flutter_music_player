@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import '../test.dart';
 
 void main() {
-  setUp(() async {
-    await setUpAppTest();
-  });
-
   testWidgets('tabs - can switch with swipe', (WidgetTester tester) async {
     await tester.runAppTest(() async {
       // Songs tab
@@ -77,10 +73,9 @@ void main() {
       songWith(id: 1, dateModified: 1),
       songWith(id: 2, dateModified: 0),
     ]);
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = songs.toList();
-    });
-    await tester.runAppTest(() async {
+    }, () async {
       tester.expectSongTiles(songs);
 
       // Change sort order
@@ -96,10 +91,9 @@ void main() {
       songWith(id: 1, dateModified: 1, title: 'b'),
       songWith(id: 2, dateModified: 0, title: 'a'),
     ]);
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = songs.toList();
-    });
-    await tester.runAppTest(() async {
+    }, () async {
       tester.expectSongTiles(songs);
 
       // Change sort feature
@@ -117,10 +111,9 @@ void main() {
       songWith(id: 1),
       songWith(id: 2),
     ]);
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = songs.toList();
-    });
-    await tester.runAppTest(() async {
+    }, () async {
       tester.expectSongTiles(songs);
       expect(find.text(l10n.tracksPlural(3)), findsOneWidget);
 

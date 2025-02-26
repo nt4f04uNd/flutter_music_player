@@ -10,46 +10,46 @@ void main() {
   final favoriteSong2 = songWith(id: 4, title: 'Song 4', isFavoriteInMediaStore: true);
   final favoriteSong3 = songWith(id: 5, title: 'Song 5', isFavoriteInMediaStore: true);
 
-  setUp(() async {
-    await setUpAppTest(() {
-      FakeSweyerPluginPlatform.instance.songs = [
-        notFavoriteSong1,
-        notFavoriteSong2,
-        notFavoriteSong3,
-        favoriteSong1,
-        favoriteSong2,
-        favoriteSong3,
-      ];
-    });
+  Future<void> setupDefaultFavouriteState(TestWidgetsFlutterBinding binding) async {
     await Settings.useMediaStoreForFavoriteSongs.set(false);
-    await Future.delayed(const Duration(seconds: 1)); // Wait for the listener in FavoriteControl to execute
+    await binding.pump(const Duration(seconds: 1)); // Wait for the listener in FavoriteControl to execute
     await FakeFavoritesControl.instance
         .setFavorite(contentTuple: ContentTuple(songs: [favoriteSong1, favoriteSong2, favoriteSong3]), value: true);
     await FakeFavoritesControl.instance.setFavorite(
         contentTuple: ContentTuple(songs: [notFavoriteSong1, notFavoriteSong2, notFavoriteSong3]), value: false);
-  });
+  }
 
   group('MediaStore', () {
     testWidgets('Updates the MediaStore correctly when resolving conflicts', (WidgetTester tester) async {
-      final localFavoriteAndMediaStoreSong = favoriteSong1;
-      final notFavoriteInBothSong = notFavoriteSong1;
-      final localFavoriteButNotInMediaStoreKeepSong = notFavoriteSong2;
-      final localFavoriteButNotInMediaStoreUnFavorSong = notFavoriteSong3;
-      final mediaStoreFavoriteButNotLocalKeepSong = favoriteSong2;
-      final mediaStoreFavoriteButNotLocalUnFavorSong = favoriteSong3;
-      await FakeFavoritesControl.instance.setFavorite(
-        contentTuple: ContentTuple(
-          songs: [localFavoriteButNotInMediaStoreKeepSong, localFavoriteButNotInMediaStoreUnFavorSong],
-        ),
-        value: true,
-      );
-      await FakeFavoritesControl.instance.setFavorite(
-        contentTuple: ContentTuple(
-          songs: [mediaStoreFavoriteButNotLocalKeepSong, mediaStoreFavoriteButNotLocalUnFavorSong],
-        ),
-        value: false,
-      );
-      await tester.runAppTest(() async {
+      await tester.runAppTest(initialization: () {
+        FakeSweyerPluginPlatform.instance.songs = [
+          notFavoriteSong1,
+          notFavoriteSong2,
+          notFavoriteSong3,
+          favoriteSong1,
+          favoriteSong2,
+          favoriteSong3,
+        ];
+      }, () async {
+        await setupDefaultFavouriteState(tester.binding);
+        final localFavoriteAndMediaStoreSong = favoriteSong1;
+        final notFavoriteInBothSong = notFavoriteSong1;
+        final localFavoriteButNotInMediaStoreKeepSong = notFavoriteSong2;
+        final localFavoriteButNotInMediaStoreUnFavorSong = notFavoriteSong3;
+        final mediaStoreFavoriteButNotLocalKeepSong = favoriteSong2;
+        final mediaStoreFavoriteButNotLocalUnFavorSong = favoriteSong3;
+        await FakeFavoritesControl.instance.setFavorite(
+          contentTuple: ContentTuple(
+            songs: [localFavoriteButNotInMediaStoreKeepSong, localFavoriteButNotInMediaStoreUnFavorSong],
+          ),
+          value: true,
+        );
+        await FakeFavoritesControl.instance.setFavorite(
+          contentTuple: ContentTuple(
+            songs: [mediaStoreFavoriteButNotLocalKeepSong, mediaStoreFavoriteButNotLocalUnFavorSong],
+          ),
+          value: false,
+        );
         await Settings.useMediaStoreForFavoriteSongs.set(true);
         await tester.pumpAndSettle();
         Finder findInDialog(Finder finder) => find.descendant(of: find.byType(AlertDialog), matching: finder);
@@ -82,7 +82,17 @@ void main() {
 
     testWidgets("When switching to MediaStore, doesn't show resolve conflict dialog with no conflicts",
         (WidgetTester tester) async {
-      await tester.runAppTest(() async {
+      await tester.runAppTest(initialization: () {
+        FakeSweyerPluginPlatform.instance.songs = [
+          notFavoriteSong1,
+          notFavoriteSong2,
+          notFavoriteSong3,
+          favoriteSong1,
+          favoriteSong2,
+          favoriteSong3,
+        ];
+      }, () async {
+        await setupDefaultFavouriteState(tester.binding);
         await Settings.useMediaStoreForFavoriteSongs.set(true);
         await tester.pumpAndSettle();
         expect(find.text(l10n.resolveConflict), findsNothing);
@@ -90,9 +100,19 @@ void main() {
     });
 
     testWidgets('Allows to cancel when resolving conflicts', (WidgetTester tester) async {
-      await FakeFavoritesControl.instance
-          .setFavorite(contentTuple: ContentTuple(songs: [notFavoriteSong1]), value: true);
-      await tester.runAppTest(() async {
+      await tester.runAppTest(initialization: () {
+        FakeSweyerPluginPlatform.instance.songs = [
+          notFavoriteSong1,
+          notFavoriteSong2,
+          notFavoriteSong3,
+          favoriteSong1,
+          favoriteSong2,
+          favoriteSong3,
+        ];
+      }, () async {
+        await setupDefaultFavouriteState(tester.binding);
+        await FakeFavoritesControl.instance
+            .setFavorite(contentTuple: ContentTuple(songs: [notFavoriteSong1]), value: true);
         await Settings.useMediaStoreForFavoriteSongs.set(true);
         await tester.pumpAndSettle();
         expect(find.text(l10n.resolveConflict), findsOneWidget);
@@ -103,19 +123,32 @@ void main() {
       });
     });
 
-    testWidgets('Keeps favorites when switching form MediaStore to local', (WidgetTester tester) async {
-      final favorSong = notFavoriteSong1;
-      final unFavorSong = favoriteSong1;
-      await Settings.useMediaStoreForFavoriteSongs.set(true);
-      await tester.pumpAndSettle();
-      await FakeFavoritesControl.instance.setFavorite(contentTuple: ContentTuple(songs: [favorSong]), value: true);
-      await FakeFavoritesControl.instance.setFavorite(contentTuple: ContentTuple(songs: [unFavorSong]), value: false);
-      await Settings.useMediaStoreForFavoriteSongs.set(false);
-      await tester.pumpAndSettle();
-      expect(FakeFavoritesControl.instance.isFavorite(unFavorSong), false);
-      expect(FakeFavoritesControl.instance.isFavorite(notFavoriteSong2), false);
-      expect(FakeFavoritesControl.instance.isFavorite(favorSong), true);
-      expect(FakeFavoritesControl.instance.isFavorite(favoriteSong2), true);
+    test('Keeps favorites when switching form MediaStore to local', () async {
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      await binding.runAppTestWithoutUi(initialization: () {
+        FakeSweyerPluginPlatform.instance.songs = [
+          notFavoriteSong1,
+          notFavoriteSong2,
+          notFavoriteSong3,
+          favoriteSong1,
+          favoriteSong2,
+          favoriteSong3,
+        ];
+      }, () async {
+        await setupDefaultFavouriteState(binding);
+        final favorSong = notFavoriteSong1;
+        final unFavorSong = favoriteSong1;
+        await Settings.useMediaStoreForFavoriteSongs.set(true);
+        await binding.pump();
+        await FakeFavoritesControl.instance.setFavorite(contentTuple: ContentTuple(songs: [favorSong]), value: true);
+        await FakeFavoritesControl.instance.setFavorite(contentTuple: ContentTuple(songs: [unFavorSong]), value: false);
+        await Settings.useMediaStoreForFavoriteSongs.set(false);
+        await binding.pump();
+        expect(FakeFavoritesControl.instance.isFavorite(unFavorSong), false);
+        expect(FakeFavoritesControl.instance.isFavorite(notFavoriteSong2), false);
+        expect(FakeFavoritesControl.instance.isFavorite(favorSong), true);
+        expect(FakeFavoritesControl.instance.isFavorite(favoriteSong2), true);
+      });
     });
   });
 }

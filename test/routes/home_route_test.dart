@@ -10,20 +10,15 @@ import '../observer/observer.dart';
 import '../test.dart';
 
 void main() {
-  setUp(() async {
-    await setUpAppTest();
-  });
-
   group('permissions screen', () {
     testWidgets('shows if no permissions were granted and pressing the button requests permissions',
-            (WidgetTester tester) async {
+        (WidgetTester tester) async {
       late PermissionsChannelObserver permissionsObserver;
-      await setUpAppTest(() {
+      await tester.runAppTest(initialization: () {
         permissionsObserver = PermissionsChannelObserver(tester.binding);
         permissionsObserver.setPermission(Permission.storage, PermissionStatus.denied);
         permissionsObserver.setPermission(Permission.audio, PermissionStatus.denied);
-      });
-      await tester.runAppTest(() async {
+      }, () async {
         expect(permissionsObserver.checkedPermissions, [Permission.storage],
             reason: 'Should always check the storage and audio permission on startup');
         expect(find.byType(Home), findsNothing, reason: 'Permissions are not granted yet');
@@ -45,13 +40,12 @@ void main() {
     /// and don't want to show the permission request screen.
     testWidgets('does not show when removed storage permission is permanently denied', (WidgetTester tester) async {
       late PermissionsChannelObserver permissionsObserver;
-      await setUpAppTest(() {
+      await tester.runAppTest(initialization: () {
         FakeDeviceInfoControl.instance.sdkInt = 33;
         permissionsObserver = PermissionsChannelObserver(tester.binding);
         permissionsObserver.setPermission(Permission.storage, PermissionStatus.permanentlyDenied);
         permissionsObserver.setPermission(Permission.audio, PermissionStatus.granted);
-      });
-      await tester.runAppTest(() async {
+      }, () async {
         expect(Permissions.instance.granted, true);
         expect(permissionsObserver.checkedPermissions, [Permission.audio]);
         expect(find.byType(Home), findsOneWidget, reason: 'Audio permissions was already granted');
@@ -63,13 +57,12 @@ void main() {
     /// and don't want to show the permission request screen.
     testWidgets('does not show when non-existent audio permission is permanently denied', (WidgetTester tester) async {
       late PermissionsChannelObserver permissionsObserver;
-      await setUpAppTest(() {
+      await tester.runAppTest(initialization: () {
         FakeDeviceInfoControl.instance.sdkInt = 32;
         permissionsObserver = PermissionsChannelObserver(tester.binding);
         permissionsObserver.setPermission(Permission.storage, PermissionStatus.granted);
         permissionsObserver.setPermission(Permission.audio, PermissionStatus.permanentlyDenied);
-      });
-      await tester.runAppTest(() async {
+      }, () async {
         expect(Permissions.instance.granted, true);
         expect(permissionsObserver.checkedPermissions, [Permission.storage]);
         expect(find.byType(Home), findsOneWidget, reason: 'Storage permissions was already granted');
@@ -78,12 +71,11 @@ void main() {
 
     testWidgets('shows toast and opens settings when permissions are denied', (WidgetTester tester) async {
       late PermissionsChannelObserver permissionsObserver;
-      await setUpAppTest(() {
+      await tester.runAppTest(initialization: () {
         permissionsObserver = PermissionsChannelObserver(tester.binding);
         permissionsObserver.setPermission(Permission.storage, PermissionStatus.denied);
         permissionsObserver.setPermission(Permission.audio, PermissionStatus.denied);
-      });
-      await tester.runAppTest(() async {
+      }, () async {
         permissionsObserver.setPermission(Permission.storage, PermissionStatus.permanentlyDenied);
         permissionsObserver.setPermission(Permission.audio, PermissionStatus.permanentlyDenied);
         permissionsObserver.isOpeningSettingsSuccessful = false;
@@ -107,24 +99,24 @@ void main() {
 
   testWidgets('searching screen - shows when permissions are granted and searching for tracks',
       (WidgetTester tester) async {
-    // Use fake
-    ContentControl.instance.dispose();
-    final fake = FakeContentControl();
-    fake.init();
+    await tester.runAppTest(postInitialization: () {
+      // Use fake
+      ContentControl.instance.dispose();
+      final fake = FakeContentControl();
+      fake.init();
 
-    expect(Permissions.instance.granted, true);
-    expect(ContentControl.instance.disposed.value, true);
-    expect(ContentControl.instance.initializing, false);
-    expect(ContentControl.instance.stateNullable, null);
+      expect(Permissions.instance.granted, true);
+      expect(ContentControl.instance.disposed.value, true);
+      expect(ContentControl.instance.initializing, false);
+      expect(ContentControl.instance.stateNullable, null);
 
-    // Fake ContentControl.init in a way to trigger the home screen rebuild
-    fake.initializing = true;
-    fake.stateNullable = ContentState();
-    fake.disposed.value = false;
+      // Fake ContentControl.init in a way to trigger the home screen rebuild
+      fake.initializing = true;
+      fake.stateNullable = ContentState();
+      fake.disposed.value = false;
 
-    expect(ContentControl.instance.initializing, true);
-
-    await tester.runAppTest(() async {
+      expect(ContentControl.instance.initializing, true);
+    }, () async {
       // Expect appropriate ui
       expect(find.text(l10n.searchingForTracks), findsOneWidget);
       expect(find.byType(Spinner), findsOneWidget);
@@ -146,27 +138,24 @@ void main() {
 
   testWidgets('no songs screen - shows when the library is empty and pressing the button performs refetching',
       (WidgetTester tester) async {
-    // TODO: because of `MusicPlayer.instance.stop` at the end of `runAppTest`, this test will print an error in console, but not actually fail, because the exception is caught. Ideally I should somehow hide that
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       FakeSweyerPluginPlatform.instance.songs = [];
-    });
-    await tester.runAppTest(() async {
+    }, () async {
       expect(Permissions.instance.granted, true);
       expect(find.text(l10n.noMusic), findsOneWidget);
 
       // Test refresh
       FakeSweyerPluginPlatform.instance.songs = [songWith()];
-      // Triggering refresh will cause a real async work
-      await tester.runAsync(() {
-        return tester.tap(find.text(l10n.refresh));
-      });
+      await tester.tap(find.text(l10n.refresh));
+      // Wait for the refresh to be executed
+      await tester.pump(const Duration(seconds: 1));
       expect(ContentControl.instance.state.allSongs.songs, [songWith()]);
     });
   });
 
   testWidgets('app shows exit confirmation toast if enabled in the preferences', (WidgetTester tester) async {
-    await Settings.confirmExitingWithBackButton.set(true);
     await tester.runAppTest(() async {
+      await Settings.confirmExitingWithBackButton.set(true);
       final SystemChannelObserver systemObserver = SystemChannelObserver(tester);
       final ToastChannelObserver toastObserver = ToastChannelObserver(tester);
       await BackButtonInterceptor.popRoute();
@@ -185,8 +174,8 @@ void main() {
   });
 
   testWidgets('app does not ask for exit confirmation if disabled in the preferences', (WidgetTester tester) async {
-    await Settings.confirmExitingWithBackButton.set(false);
     await tester.runAppTest(() async {
+      await Settings.confirmExitingWithBackButton.set(false);
       final SystemChannelObserver systemObserver = SystemChannelObserver(tester);
       final ToastChannelObserver toastObserver = ToastChannelObserver(tester);
       await BackButtonInterceptor.popRoute();
@@ -227,12 +216,11 @@ void main() {
 
   testWidgets('Allows changing settings when uninitialized and no permissions were granted',
       (WidgetTester tester) async {
-    await setUpAppTest(() {
+    await tester.runAppTest(initialization: () {
       PermissionsChannelObserver permissionsObserver = PermissionsChannelObserver(tester.binding);
       permissionsObserver.setPermission(Permission.storage, PermissionStatus.denied);
       permissionsObserver.setPermission(Permission.audio, PermissionStatus.denied);
-    });
-    await tester.runAppTest(() async {
+    }, () async {
       // Go to the settings
       await tester.tap(find.byType(SettingsButton));
       await tester.pumpAndSettle();
