@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="music_player_widget_description">Music player</string>
+    <string name="previous_track">Previous track</string>
+    <string name="play">Play</string>
+    <string name="next_track">Next track</string>
+</resources>

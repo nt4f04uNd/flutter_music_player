@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sweyer/constants.dart';
 import 'package:sweyer/routes/settings_route/theme_settings.dart';
 
+import '../observer/app_widget.dart';
 import '../observer/observer.dart';
 import '../test.dart';
 
@@ -16,7 +17,7 @@ void main() {
 
   group('permissions screen', () {
     testWidgets('shows if no permissions were granted and pressing the button requests permissions',
-            (WidgetTester tester) async {
+        (WidgetTester tester) async {
       late PermissionsChannelObserver permissionsObserver;
       await setUpAppTest(() {
         permissionsObserver = PermissionsChannelObserver(tester.binding);
@@ -133,6 +134,12 @@ void main() {
 
   testWidgets('home screen - shows when permissions are granted and not searching for tracks',
       (WidgetTester tester) async {
+    late AppWidgetChannelObserver appWidgetChannelObserver;
+    // Wait for and discard widget events from previous tests, since we don't wait for all async actions to complete.
+    await tester.runAsync(() => tester.pump());
+    await setUpAppTest(() {
+      appWidgetChannelObserver = AppWidgetChannelObserver(tester.binding);
+    });
     await tester.runAppTest(() async {
       expect(Permissions.instance.granted, true);
       expect(find.byType(Home), findsOneWidget);
@@ -141,6 +148,10 @@ void main() {
         tester.getRect(find.byType(App)).height,
         reason: 'Player route must be offscreen',
       );
+      // Wait for widget events from the app startup of this event to reach the app widget channel observer.
+      await tester.runAsync(() => tester.pump());
+      expect(appWidgetChannelObserver.saveWidgetDataLog, [("song", songWith().contentUri), ("playing", false)]);
+      expect(appWidgetChannelObserver.updateWidgetRequests, [AppWidgetControl.appWidgetName]);
     });
   });
 

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="buttonForeground">@android:color/white</color>
+    <color name="widget_button_bar_background">#C3232323</color>
 </resources>
