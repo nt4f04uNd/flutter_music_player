@@ -17,7 +17,10 @@ abstract class PlatformSong {
 }
 
 /// An album from the native platform.
-abstract class PlatformAlbum {}
+abstract class PlatformAlbum {
+  /// The id of this album in the native platform.
+  int get id;
+}
 
 /// An artist from the native platform.
 abstract class PlatformArtist {}
@@ -46,7 +49,7 @@ class CancellationSignal {
 }
 
 /// A factory to load an implementation from the raw data describing a platform item.
-typedef DataFactory<T> = T Function(Map<String, dynamic> data);
+typedef DataFactory<T> = T? Function(Map<String, dynamic> data);
 
 class SweyerPlugin {
   static const instance = SweyerPlugin();
@@ -73,25 +76,21 @@ class SweyerPlugin {
   Future<void> fixAlbumArt(int albumId) async => await SweyerPluginPlatform.instance.fixAlbumArt(albumId);
 
   Future<Iterable<T>> retrieveSongs<T extends PlatformSong>(DataFactory<T> factory) async =>
-      (await SweyerPluginPlatform.instance.retrieveSongs()).map(factory);
+      (await SweyerPluginPlatform.instance.retrieveSongs()).map(factory).nonNulls;
 
-  Future<Map<int, T>> retrieveAlbums<T extends PlatformAlbum>(DataFactory<T> factory) async {
-    final maps = await SweyerPluginPlatform.instance.retrieveAlbums();
-    final Map<int, T> albums = {};
-    for (final map in maps) {
-      albums[map['id'] as int] = factory(map);
-    }
-    return albums;
-  }
+  Future<Map<int, T>> retrieveAlbums<T extends PlatformAlbum>(DataFactory<T> factory) async => Map.fromIterable(
+        (await SweyerPluginPlatform.instance.retrieveAlbums()).map(factory).nonNulls,
+        key: (album) => album.id,
+      );
 
   Future<Iterable<T>> retrievePlaylists<T extends PlatformPlaylist>(DataFactory<T> factory) async =>
-      (await SweyerPluginPlatform.instance.retrievePlaylists()).map(factory);
+      (await SweyerPluginPlatform.instance.retrievePlaylists()).map(factory).nonNulls;
 
   Future<Iterable<T>> retrieveArtists<T extends PlatformArtist>(DataFactory<T> factory) async =>
-      (await SweyerPluginPlatform.instance.retrieveArtists()).map(factory);
+      (await SweyerPluginPlatform.instance.retrieveArtists()).map(factory).nonNulls;
 
   Future<Iterable<T>> retrieveGenres<T extends PlatformGenre>(DataFactory<T> factory) async =>
-      (await SweyerPluginPlatform.instance.retrieveGenres()).map(factory);
+      (await SweyerPluginPlatform.instance.retrieveGenres()).map(factory).nonNulls;
 
   /// Sets the songs favorite flag to [value].
   ///
