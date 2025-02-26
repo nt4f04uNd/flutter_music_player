@@ -60,7 +60,7 @@ dependencies:
   # quick_actions: ^0.6.0 # TODO: quick actions are blocked on https://github.com/ryanheise/audio_service/issues/671
 
   fluttertoast: ^8.2.12
-  just_audio: ^0.9.42
+  just_audio: ^0.9.46
   audio_service:
     # Using this branch for custom notifications https://github.com/nt4f04uNd/audio_service/commits/sweyer
     # See https://github.com/ryanheise/audio_service/issues/633
